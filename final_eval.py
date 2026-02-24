@@ -16,7 +16,7 @@ ROOT_PATH = Path(r"C:\Users\kasgr\Documents\Masteroppgave\master_repository\Mast
 DATA_PATH = "parquet_data_karmoy_2024_L42_processed.csv"
 
 N_FEATURES = 91
-TASK_NAME = "short_term_forecast"
+TASK_NAME = "long_term_forecast"
 FEATURES_MODE = "M"
 TARGET = "OT"
 FREQ = "t"
@@ -37,7 +37,7 @@ SWEEP_RUN_DIR = TSLIB_DIR / "checkpoints" / "sweeps" / "YOUR_SWEEP_RUN_ID_HERE"
 
 # Selection mode
 BEST_PER_MODEL = True          # True = one best config per architecture
-TOP_K_OVERALL = 3              # used only if BEST_PER_MODEL=False
+TOP_K_OVERALL = 1              # used only if BEST_PER_MODEL=False
 
 # -----------------------------
 # Paths inside the sweep run
@@ -141,8 +141,11 @@ def pick_top_k_overall(trials: List[Dict[str, Any]], k: int) -> List[Dict[str, A
     return ok[:k]
 
 
+def add_if_present(cmd: List[str], trial: Dict[str, Any], key: str, flag: str):
+    if key in trial and trial[key] is not None:
+        cmd += [flag, str(trial[key])]
+
 def build_cmd(trial: Dict[str, Any], exp_dir: Path, metrics_path: Path) -> List[str]:
-    # Keep model_id short; it still identifies the config
     model_id = f"final_{trial['model_id']}"
 
     cmd = [
@@ -169,12 +172,10 @@ def build_cmd(trial: Dict[str, Any], exp_dir: Path, metrics_path: Path) -> List[
         "--c_out", str(N_FEATURES),
 
         "--train_epochs", str(FINAL_EPOCHS),
+
         "--batch_size", str(trial["batch_size"]),
         "--learning_rate", str(trial["learning_rate"]),
-
-        "--d_model", str(trial["d_model"]),
-        "--e_layers", str(trial["e_layers"]),
-        "--dropout", str(trial["dropout"]),
+        "--dropout", str(trial.get("dropout", 0.0)),
 
         "--itr", str(ITR),
         "--patience", str(PATIENCE),
@@ -187,6 +188,27 @@ def build_cmd(trial: Dict[str, Any], exp_dir: Path, metrics_path: Path) -> List[
         "--exp_dir", str(exp_dir),
         "--metrics_path", str(metrics_path),
     ]
+
+    # Optional regularization (if present in sweep results)
+    add_if_present(cmd, trial, "weight_decay", "--weight_decay")
+
+    # Transformer-ish (ONLY if present)
+    add_if_present(cmd, trial, "d_model", "--d_model")
+    add_if_present(cmd, trial, "e_layers", "--e_layers")
+    add_if_present(cmd, trial, "d_layers", "--d_layers")
+    add_if_present(cmd, trial, "n_heads", "--n_heads")
+    add_if_present(cmd, trial, "d_ff", "--d_ff")
+
+    # TimeMixer-specific (ONLY if present)
+    add_if_present(cmd, trial, "down_sampling_method", "--down_sampling_method")
+    add_if_present(cmd, trial, "down_sampling_layers", "--down_sampling_layers")
+    add_if_present(cmd, trial, "down_sampling_window", "--down_sampling_window")
+    add_if_present(cmd, trial, "channel_independence", "--channel_independence")
+
+    # LSTM-specific (ONLY if present)
+    add_if_present(cmd, trial, "d_mark", "--d_mark")
+    add_if_present(cmd, trial, "lstm_hidden", "--lstm_hidden")
+    add_if_present(cmd, trial, "lstm_layers", "--lstm_layers")
 
     if USE_GPU:
         cmd += ["--use_gpu", "--gpu", "0"]

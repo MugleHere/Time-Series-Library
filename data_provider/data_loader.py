@@ -20,17 +20,207 @@ HUGGINGFACE_REPO = "thuml/Time-Series-Library"
 
 ##############################
 
+#class Dataset_MYDATA(Dataset):
+#    """
+#    Dataset class for custom CSV data with segment awareness.
+#    Dataset for forecasting.
+#    CSV needs: date, segment_id, feature columns
+#    """
+#
+#    def __init__(self, args, root_path, flag='train', size=None,
+#                 features='M', data_path=None, target='OT',
+#                 scale=True, timeenc=0, freq='30min',seasonal_patterns=None):
+#        # TSLib passes these
+#        self.args = args
+#        self.root_path = root_path
+#        self.data_path = data_path
+#        self.flag = flag
+#
+#        if size is None:
+#            size = [args.seq_len, args.label_len, args.pred_len]
+#        self.seq_len, self.label_len, self.pred_len = size
+#
+#        self.features = features
+#        self.target = target  # ignored for features="M"
+#        self.scale = scale
+#        self.timeenc = timeenc
+#        self.freq = freq
+#
+#        self.__read_data__()
+#
+#    @staticmethod
+#    def _segment_ranges(seg_ids: np.ndarray):
+#        ranges = []
+#        if len(seg_ids) == 0:
+#            return ranges
+#        start = 0
+#        cur = seg_ids[0]
+#        for i in range(1, len(seg_ids)):
+#            if seg_ids[i] != cur:
+#                ranges.append((start, i))  # [start, i)
+#                start = i
+#                cur = seg_ids[i]
+#        ranges.append((start, len(seg_ids)))
+#        return ranges
+#
+#    @staticmethod
+#    def _split_each_segment(ranges, train_ratio=0.7, val_ratio=0.1):
+#        splits = {"train": [], "val": [], "test": []}
+#        for (s, e) in ranges:
+#            n = e - s
+#            if n <= 0:
+#                continue
+#            b_train = s + int(n * train_ratio)
+#            b_val   = s + int(n * (train_ratio + val_ratio))
+#
+#            # avoid empty subranges for tiny segments
+#            b_train = min(max(b_train, s), e)
+#            b_val   = min(max(b_val, b_train), e)
+#
+#            splits["train"].append((s, b_train))
+#            splits["val"].append((b_train, b_val))
+#            splits["test"].append((b_val, e))
+#        return splits
+#
+#    def __read_data__(self):
+#        path = os.path.join(self.root_path, self.data_path)
+# 
+#
+#        df = pd.read_csv(path)
+#
+#        if "date" not in df.columns or "segment_id" not in df.columns:
+#            raise ValueError("CSV must contain 'date' and 'segment_id' columns.")
+#
+#        df["date"] = pd.to_datetime(df["date"])
+#        df = df.sort_values(["segment_id", "date"]).reset_index(drop=True)
+#
+#        # ---- choose columns ----
+#        if self.features in ["M", "MS"]:
+#            cols_data = [c for c in df.columns if c not in ["date", "segment_id"]]
+#        elif self.features == "S":
+#            cols_data = [self.target]
+#        else:
+#            raise ValueError("features must be one of {'M','MS','S'}")
+#
+#        if self.features == "MS":
+#            cols_x = cols_data
+#            cols_y = [self.target]
+#        else:
+#            cols_x = cols_data
+#            cols_y = cols_data  # for M or S
+#
+#        data_x_raw = df[cols_x].to_numpy(np.float32)
+#        data_y_raw = df[cols_y].to_numpy(np.float32)
+#
+#        # ---- time features (TSLib) ----
+#        # stamp = time_features(pd.to_datetime(df["date"]), freq=self.freq)
+#        dates = pd.DatetimeIndex(df["date"])
+#        stamp = time_features(dates, freq=self.freq)
+#
+#        self.data_stamp = stamp.transpose(1, 0).astype(np.float32)  # [N, D]
+#
+#        # ---- segment-aware split ----
+#
+#        seg_ids = df["segment_id"].to_numpy()
+#        ranges = self._segment_ranges(seg_ids)
+#
+#        train_ratio = getattr(self.args, "train_ratio", 0.7)
+#        val_ratio = getattr(self.args, "val_ratio", 0.1)
+#
+#        splits = self._split_each_segment(
+#            ranges,
+#            train_ratio=train_ratio,
+#            val_ratio=val_ratio
+#        )
+#
+#        self.splits = splits
+#
+#
+#        # ---- scaling (fit train only) ----
+#        if self.scale:
+#            scaler = StandardScaler()
+#            train_rows = np.concatenate([data_x_raw[s:e] for (s, e) in splits["train"]], axis=0)
+#            scaler.fit(train_rows)
+#            data_x = scaler.transform(data_x_raw).astype(np.float32)
+#            # for M: y must match x scaling
+#            if cols_y == cols_x:
+#                data_y = data_x
+#            else:
+#                # MS scaling: scale target using its x-column stats
+#                j = cols_x.index(self.target)
+#                mu, sig = scaler.mean_[j], scaler.scale_[j] if scaler.scale_[j] != 0 else 1.0
+#                data_y = ((data_y_raw - mu) / sig).astype(np.float32)
+#            self.scaler = scaler
+#        else:
+#            data_x, data_y = data_x_raw, data_y_raw
+#            self.scaler = None
+#
+#        self.data_x = data_x
+#        self.data_y = data_y
+#
+#        # ---- build index_map safely per segment ----
+#        self.index_map = []
+#        needed = self.seq_len + self.pred_len
+#
+#        for (seg_s, seg_e) in ranges:
+#            n = seg_e - seg_s
+#            if n < needed:
+#                continue
+#
+#            b_train = seg_s + int(n * train_ratio)
+#            b_val   = seg_s + int(n * (train_ratio + val_ratio))
+#
+#            if self.flag == "train":
+#                a, b = seg_s, b_train
+#            elif self.flag == "val":
+#                a, b = b_train, b_val
+#                a = max(seg_s, a - self.seq_len)  # allow history context
+#            else:  # test
+#                a, b = b_val, seg_e
+#                a = max(seg_s, a - self.seq_len)  # allow history context
+#
+#            if b - a < needed:
+#                continue
+#
+#            max_start = b - needed + 1
+#            for i in range(a, max_start):
+#                self.index_map.append(i)
+#
+#        self.index_map = np.asarray(self.index_map, dtype=np.int64)
+#
+#        print(f"[{self.flag}] rows={len(df)} windows={len(self.index_map)} "
+#            f"segments={len(ranges)}")
+#
+#
+#
+#    def __len__(self):
+#        return len(self.index_map)
+#
+#    def __getitem__(self, idx):
+#        s_begin = int(self.index_map[idx])
+#        s_end = s_begin + self.seq_len
+#
+#        r_begin = s_end - self.label_len
+#        r_end = s_end + self.pred_len
+#
+#        seq_x = self.data_x[s_begin:s_end]
+#        seq_y = self.data_y[r_begin:r_end]
+#
+#        seq_x_mark = self.data_stamp[s_begin:s_end]
+#        seq_y_mark = self.data_stamp[r_begin:r_end]
+#
+#        return seq_x, seq_y, seq_x_mark, seq_y_mark
+#
+#
 class Dataset_MYDATA(Dataset):
     """
-    Dataset class for custom CSV data with segment awareness.
-    Dataset for forecasting.
-    CSV needs: date, segment_id, feature columns
+    Segment-aware forecasting dataset.
+    CSV must contain: date, segment_id, and feature columns.
     """
 
     def __init__(self, args, root_path, flag='train', size=None,
                  features='M', data_path=None, target='OT',
-                 scale=True, timeenc=0, freq='30min',seasonal_patterns=None):
-        # TSLib passes these
+                 scale=True, timeenc=0, freq='30min', seasonal_patterns=None):
         self.args = args
         self.root_path = root_path
         self.data_path = data_path
@@ -40,8 +230,9 @@ class Dataset_MYDATA(Dataset):
             size = [args.seq_len, args.label_len, args.pred_len]
         self.seq_len, self.label_len, self.pred_len = size
 
+        assert flag in ['train', 'val', 'test']
         self.features = features
-        self.target = target  # ignored for features="M"
+        self.target = target
         self.scale = scale
         self.timeenc = timeenc
         self.freq = freq
@@ -57,7 +248,7 @@ class Dataset_MYDATA(Dataset):
         cur = seg_ids[0]
         for i in range(1, len(seg_ids)):
             if seg_ids[i] != cur:
-                ranges.append((start, i))  # [start, i)
+                ranges.append((start, i))
                 start = i
                 cur = seg_ids[i]
         ranges.append((start, len(seg_ids)))
@@ -72,11 +263,8 @@ class Dataset_MYDATA(Dataset):
                 continue
             b_train = s + int(n * train_ratio)
             b_val   = s + int(n * (train_ratio + val_ratio))
-
-            # avoid empty subranges for tiny segments
             b_train = min(max(b_train, s), e)
             b_val   = min(max(b_val, b_train), e)
-
             splits["train"].append((s, b_train))
             splits["val"].append((b_train, b_val))
             splits["test"].append((b_val, e))
@@ -84,8 +272,6 @@ class Dataset_MYDATA(Dataset):
 
     def __read_data__(self):
         path = os.path.join(self.root_path, self.data_path)
- 
-
         df = pd.read_csv(path)
 
         if "date" not in df.columns or "segment_id" not in df.columns:
@@ -103,95 +289,120 @@ class Dataset_MYDATA(Dataset):
             raise ValueError("features must be one of {'M','MS','S'}")
 
         if self.features == "MS":
-            cols_x = cols_data
-            cols_y = [self.target]
+            self.cols_x = cols_data
+            self.cols_y = [self.target]
         else:
-            cols_x = cols_data
-            cols_y = cols_data  # for M or S
+            self.cols_x = cols_data
+            self.cols_y = cols_data
 
-        data_x_raw = df[cols_x].to_numpy(np.float32)
-        data_y_raw = df[cols_y].to_numpy(np.float32)
+        # IMPORTANT: use df[cols] (list) so it stays 2D even for one column
+        data_x_raw = df[self.cols_x].to_numpy(dtype=np.float32)
+        data_y_raw = df[self.cols_y].to_numpy(dtype=np.float32)
 
-        # ---- time features (TSLib) ----
-        # stamp = time_features(pd.to_datetime(df["date"]), freq=self.freq)
+        # Defensive: guarantee 2D (N, C)
+        if data_x_raw.ndim == 1:
+            data_x_raw = data_x_raw[:, None]
+        if data_y_raw.ndim == 1:
+            data_y_raw = data_y_raw[:, None]
+
+        # ---- time features ----
         dates = pd.DatetimeIndex(df["date"])
-        stamp = time_features(dates, freq=self.freq)
-
-        self.data_stamp = stamp.transpose(1, 0).astype(np.float32)  # [N, D]
+        if self.timeenc == 0:
+            # match style of ETT/Custom
+            df_stamp = pd.DataFrame({"date": dates})
+            df_stamp["month"] = df_stamp.date.dt.month
+            df_stamp["day"] = df_stamp.date.dt.day
+            df_stamp["weekday"] = df_stamp.date.dt.weekday
+            df_stamp["hour"] = df_stamp.date.dt.hour
+            # minute bucket if freq is minute-ish (optional, but often helpful)
+            if "t" in str(self.freq) or "min" in str(self.freq):
+                df_stamp["minute"] = df_stamp.date.dt.minute
+            self.data_stamp = df_stamp.drop(columns=["date"]).to_numpy(dtype=np.float32)
+        else:
+            stamp = time_features(dates, freq=self.freq)  # shape (D, N)
+            self.data_stamp = stamp.transpose(1, 0).astype(np.float32)  # (N, D)
 
         # ---- segment-aware split ----
-
         seg_ids = df["segment_id"].to_numpy()
         ranges = self._segment_ranges(seg_ids)
 
+        N = len(df)
         train_ratio = getattr(self.args, "train_ratio", 0.7)
         val_ratio = getattr(self.args, "val_ratio", 0.1)
 
-        splits = self._split_each_segment(
-            ranges,
-            train_ratio=train_ratio,
-            val_ratio=val_ratio
-        )
+        train_end = int(N * train_ratio)
+        val_end = int(N * (train_ratio + val_ratio))
 
-        self.splits = splits
+        global_regions = {
+            "train": (0, train_end),
+            "val": (train_end, val_end),
+            "test": (val_end, N),
+        }
 
-
-        # ---- scaling (fit train only) ----
+        # ---- scaling (fit on TRAIN rows only) ----
         if self.scale:
             scaler = StandardScaler()
-            train_rows = np.concatenate([data_x_raw[s:e] for (s, e) in splits["train"]], axis=0)
-            scaler.fit(train_rows)
+            tr_s, tr_e = global_regions["train"]
+            scaler.fit(data_x_raw[tr_s:tr_e])
+
             data_x = scaler.transform(data_x_raw).astype(np.float32)
-            # for M: y must match x scaling
-            if cols_y == cols_x:
+
+            if self.cols_y == self.cols_x:
                 data_y = data_x
             else:
-                # MS scaling: scale target using its x-column stats
-                j = cols_x.index(self.target)
-                mu, sig = scaler.mean_[j], scaler.scale_[j] if scaler.scale_[j] != 0 else 1.0
+                j = self.cols_x.index(self.target)
+                mu = scaler.mean_[j]
+                sig = scaler.scale_[j] if scaler.scale_[j] != 0 else 1.0
                 data_y = ((data_y_raw - mu) / sig).astype(np.float32)
+
             self.scaler = scaler
         else:
             data_x, data_y = data_x_raw, data_y_raw
             self.scaler = None
 
+        # keep invariant: always 2D
+        if data_x.ndim == 1:
+            data_x = data_x[:, None]
+        if data_y.ndim == 1:
+            data_y = data_y[:, None]
+
         self.data_x = data_x
         self.data_y = data_y
 
-        # ---- build index_map safely per segment ----
+        # ---- build index_map: global split, no windows crossing segments ----
         self.index_map = []
         needed = self.seq_len + self.pred_len
 
+        g_start, g_end = global_regions[self.flag]
+
         for (seg_s, seg_e) in ranges:
-            n = seg_e - seg_s
-            if n < needed:
+            if seg_e - seg_s < needed:
                 continue
 
-            b_train = seg_s + int(n * train_ratio)
-            b_val   = seg_s + int(n * (train_ratio + val_ratio))
+            reg_s = max(seg_s, g_start)
+            reg_e = min(seg_e, g_end)
+            if reg_e - reg_s < needed:
+                continue
 
             if self.flag == "train":
-                a, b = seg_s, b_train
-            elif self.flag == "val":
-                a, b = b_train, b_val
-                a = max(seg_s, a - self.seq_len)  # allow history context
-            else:  # test
-                a, b = b_val, seg_e
-                a = max(seg_s, a - self.seq_len)  # allow history context
+                start_min = reg_s
+            else:
+                start_min = max(seg_s, reg_s - self.seq_len)
 
-            if b - a < needed:
+            start_max = reg_e - needed
+            if start_max < start_min:
                 continue
 
-            max_start = b - needed + 1
-            for i in range(a, max_start):
+            for i in range(start_min, start_max + 1):
                 self.index_map.append(i)
 
         self.index_map = np.asarray(self.index_map, dtype=np.int64)
 
-        print(f"[{self.flag}] rows={len(df)} windows={len(self.index_map)} "
-            f"segments={len(ranges)}")
-
-
+        print(
+            f"[{self.flag}] rows={len(df)} windows={len(self.index_map)} "
+            f"segments={len(ranges)} data_x={self.data_x.shape} stamp={self.data_stamp.shape} "
+            f"global_split=train_end={train_end} val_end={val_end}"
+        )
 
     def __len__(self):
         return len(self.index_map)
@@ -203,15 +414,18 @@ class Dataset_MYDATA(Dataset):
         r_begin = s_end - self.label_len
         r_end = s_end + self.pred_len
 
-        seq_x = self.data_x[s_begin:s_end]
-        seq_y = self.data_y[r_begin:r_end]
+        seq_x = self.data_x[s_begin:s_end]        # (seq_len, Cx)
+        seq_y = self.data_y[r_begin:r_end]        # (label_len+pred_len, Cy)
 
         seq_x_mark = self.data_stamp[s_begin:s_end]
         seq_y_mark = self.data_stamp[r_begin:r_end]
 
         return seq_x, seq_y, seq_x_mark, seq_y_mark
 
-
+    def inverse_transform(self, data):
+        if self.scaler is None:
+            return data
+        return self.scaler.inverse_transform(data)
 
 ##############################
 

@@ -152,17 +152,25 @@ if __name__ == '__main__':
     parser.add_argument('--alpha', type=float, default=0.1, help='KNN for Graph Construction')
     parser.add_argument('--top_p', type=float, default=0.5, help='Dynamic Routing in MoE')
     parser.add_argument('--pos', type=int, choices=[0, 1], default=1, help='Positional Embedding. Set pos to 0 or 1')
-
+    ######################3
     # NEW ARGUMENTS
     parser.add_argument('--run_test', type=int, default=0, help='run test after training')
-    # NEW: experiment output control
+
     parser.add_argument('--exp_dir', type=str, default=None,
                         help='Root directory for this single run (trial). If set, checkpoints & metrics go here.')
     parser.add_argument('--metrics_path', type=str, default=None,
                         help='Write per-epoch metrics as JSONL to this path.')
     parser.add_argument('--quiet', action='store_true', default=False,
                         help='Reduce console output (useful when called from sweep).')
+    # For linear models
+    parser.add_argument('--weight_decay', type=float, default=0.0, help='L2 regularization')
 
+    parser.add_argument('--d_mark', type=int, default=5, help='time feature dimension (x_mark last dim)')
+    parser.add_argument('--lstm_hidden', type=int, default=128, help='LSTM hidden size')
+    parser.add_argument('--lstm_layers', type=int, default=1, help='number of LSTM layers')
+
+
+    ####################
     parser.add_argument(
     '--no_ckpt_load',
     action='store_true',

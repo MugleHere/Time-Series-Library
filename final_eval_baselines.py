@@ -15,7 +15,7 @@ ROOT_PATH = Path(r"C:\Users\kasgr\Documents\Masteroppgave\master_repository\Mast
 DATA_PATH = "parquet_data_karmoy_2024_L42_processed.csv"
 
 N_FEATURES = 91
-TASK_NAME = "short_term_forecast"
+TASK_NAME = "long_term_forecast"
 FEATURES_MODE = "M"
 TARGET = "OT"
 FREQ = "t"

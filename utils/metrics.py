@@ -30,6 +30,18 @@ def MAPE(pred, true):
 def MSPE(pred, true):
     return np.mean(np.square((true - pred) / true))
 
+def SMAPE(pred, true):
+    """
+    Symmetric MAPE:
+      mean( 2*|pred-true| / (|true|+|pred|) )
+    Mask where denominator is too small.
+    """
+    denom = np.abs(true) + np.abs(pred)
+    mask = denom > 1e-8
+    if not np.any(mask):
+        return np.nan
+    return np.mean(2.0 * np.abs(pred[mask] - true[mask]) / (denom[mask] + 1e-8))
+
 
 def metric(pred, true):
     mae = MAE(pred, true)
@@ -37,5 +49,6 @@ def metric(pred, true):
     rmse = RMSE(pred, true)
     mape = MAPE(pred, true)
     mspe = MSPE(pred, true)
+    smape = SMAPE(pred,true)
 
-    return mae, mse, rmse, mape, mspe
+    return mae, mse, rmse, mape, mspe, smape
