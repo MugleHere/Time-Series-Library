@@ -5,6 +5,7 @@ import torch.backends
 from utils.print_args import print_args
 import random
 import numpy as np
+from datetime import datetime
 
 if __name__ == '__main__':
     fix_seed = 2021
@@ -152,7 +153,50 @@ if __name__ == '__main__':
     parser.add_argument('--top_p', type=float, default=0.5, help='Dynamic Routing in MoE')
     parser.add_argument('--pos', type=int, choices=[0, 1], default=1, help='Positional Embedding. Set pos to 0 or 1')
 
+    # NEW ARGUMENTS
+    parser.add_argument('--run_test', type=int, default=0, help='run test after training')
+    # NEW: experiment output control
+    parser.add_argument('--exp_dir', type=str, default=None,
+                        help='Root directory for this single run (trial). If set, checkpoints & metrics go here.')
+    parser.add_argument('--metrics_path', type=str, default=None,
+                        help='Write per-epoch metrics as JSONL to this path.')
+    parser.add_argument('--quiet', action='store_true', default=False,
+                        help='Reduce console output (useful when called from sweep).')
+
+    parser.add_argument(
+    '--no_ckpt_load',
+    action='store_true',
+    default=False,
+    help='When testing without training, skip checkpoint loading (use current model weights). Useful for baselines.'
+)
+    
+    parser.add_argument(
+    '--baseline_mode',
+    action='store_true',
+    default=False,
+    help='Convenience flag for baselines: implies --no_ckpt_load and can override training-related args if desired.'
+)
+
+
+
+
+
     args = parser.parse_args()
+    if args.baseline_mode:
+        args.no_ckpt_load = True
+        # Optional overrides if you ever run baselines with is_training=1
+        # args.train_epochs = 1
+        # args.patience = 1
+
+    if args.exp_dir is not None:
+        # Make checkpoints land inside the trial folder
+        args.checkpoints = os.path.join(args.exp_dir, "checkpoints")
+        os.makedirs(args.checkpoints, exist_ok=True)
+
+        # Default metrics path inside exp_dir if not provided
+        if args.metrics_path is None:
+            args.metrics_path = os.path.join(args.exp_dir, "metrics.jsonl")
+
     if torch.cuda.is_available() and args.use_gpu:
         args.device = torch.device('cuda:{}'.format(args.gpu))
         print('Using GPU')
@@ -169,8 +213,13 @@ if __name__ == '__main__':
         args.device_ids = [int(id_) for id_ in device_ids]
         args.gpu = args.device_ids[0]
 
-    print('Args in experiment:')
-    print_args(args)
+    if not args.quiet:
+        print('Args in experiment:')
+        print_args(args)
+    else:
+        # still print minimal info so you know what started
+        print(f"RUN {args.model} {args.model_id} | epochs={args.train_epochs} | bs={args.batch_size} | lr={args.learning_rate}")
+
 
 
     if args.task_name == 'long_term_forecast':
@@ -197,67 +246,33 @@ if __name__ == '__main__':
 
     if args.is_training:
         for ii in range(args.itr):
-            # setting record of experiments
-            exp = Exp(args)  # set experiments
-            setting = '{}_{}_{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_expand{}_dc{}_fc{}_eb{}_dt{}_{}_{}'.format(
-                args.task_name,
-                args.model_id,
-                args.model,
-                args.data,
-                args.features,
-                args.seq_len,
-                args.label_len,
-                args.pred_len,
-                args.d_model,
-                args.n_heads,
-                args.e_layers,
-                args.d_layers,
-                args.d_ff,
-                args.expand,
-                args.d_conv,
-                args.factor,
-                args.embed,
-                args.distil,
-                args.des, ii)
 
-            print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
+            exp = Exp(args)
+
+            current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+            setting = f"{args.model}_{args.model_id}_{current_time}"
+
+            print(f"\n>>>> START TRAINING: {setting} <<<<")
             exp.train(setting)
 
-            print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
-            exp.test(setting)
-            if args.use_gpu:
-                if args.gpu_type == 'mps':
-                    torch.backends.mps.empty_cache()
-                elif args.gpu_type == 'cuda':
-                    torch.cuda.empty_cache()
-    else:
-        exp = Exp(args)  # set experiments
-        ii = 0
-        setting = '{}_{}_{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_expand{}_dc{}_fc{}_eb{}_dt{}_{}_{}'.format(
-            args.task_name,
-            args.model_id,
-            args.model,
-            args.data,
-            args.features,
-            args.seq_len,
-            args.label_len,
-            args.pred_len,
-            args.d_model,
-            args.n_heads,
-            args.e_layers,
-            args.d_layers,
-            args.d_ff,
-            args.expand,
-            args.d_conv,
-            args.factor,
-            args.embed,
-            args.distil,
-            args.des, ii)
+            if args.run_test:
+                print(f"\n>>>> START TESTING: {setting} <<<<")
+                exp.test(setting)
 
-        print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
-        exp.test(setting, test=1)
-        if args.use_gpu:
-            if args.gpu_type == 'mps':
-                torch.backends.mps.empty_cache()
-            elif args.gpu_type == 'cuda':
+            if args.use_gpu and args.gpu_type == 'cuda':
                 torch.cuda.empty_cache()
+
+    else:
+        exp = Exp(args)
+        current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+        setting = f"{args.model}_{args.model_id}_{current_time}"
+
+        print(f"\n>>>> TESTING: {setting} <<<<")
+        if args.baseline_mode or args.no_ckpt_load:
+            exp.test(setting, test=0)   # don't try to load checkpoint
+        else:
+            exp.test(setting, test=1)   # current behavior
+
+
+        if args.use_gpu and args.gpu_type == 'cuda':
+            torch.cuda.empty_cache()
