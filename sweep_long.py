@@ -14,7 +14,7 @@ from typing import Optional, List, Dict, Any, Tuple
 # -----------------------------
 TSLIB_DIR = Path(__file__).resolve().parent  # folder containing run.py
 
-ROOT_PATH = Path(r"C:\Users\kasgr\Documents\Masteroppgave\master_repository\Master-s-Thesis\data\processed")
+ROOT_PATH = Path(r"C:\Users\kasgr\Documents\Masteroppgave\master_repository\Master-s-Thesis\third_party\tslib\data")
 DATA_PATH = "data_karmoy_2024_L42_processed.csv"
 
 N_FEATURES = 90
