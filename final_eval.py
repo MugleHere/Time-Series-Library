@@ -6,6 +6,13 @@ import subprocess
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 from collections import defaultdict
+import hashlib
+
+import numpy as np
+
+def short_hash(s: str, n: int = 10) -> str:
+    return hashlib.md5(s.encode("utf-8")).hexdigest()[:n]
+
 
 # -----------------------------
 # USER CONFIG
@@ -13,9 +20,9 @@ from collections import defaultdict
 TSLIB_DIR = Path(__file__).resolve().parent
 
 ROOT_PATH = Path(r"C:\Users\kasgr\Documents\Masteroppgave\master_repository\Master-s-Thesis\data\processed")
-DATA_PATH = "parquet_data_karmoy_2024_L42_processed.csv"
+DATA_PATH = "data_karmoy_2024_L42_processed.csv"
 
-N_FEATURES = 91
+N_FEATURES = 90
 TASK_NAME = "long_term_forecast"
 FEATURES_MODE = "M"
 TARGET = "OT"
@@ -27,13 +34,21 @@ PRED_LEN = 1
 USE_GPU = False
 NUM_WORKERS = 0
 ITR = 1
+SEEDS = [42, 43, 44]
 PATIENCE = 5
-FINAL_EPOCHS = 20
+FINAL_EPOCHS = 50
 DES = "final"
 
+WRITE_LOGS = False          # if True -> write .log files for all runs
+WRITE_LOGS_ON_FAIL = True   # if True -> only write logs when rc != 0
+
+
+
+
 # --- point this to a specific sweep run folder ---
+
 # Example: TSLIB_DIR / "checkpoints" / "sweeps" / "20260220_115730"
-SWEEP_RUN_DIR = TSLIB_DIR / "checkpoints" / "sweeps" / "YOUR_SWEEP_RUN_ID_HERE"
+SWEEP_RUN_DIR = TSLIB_DIR / "checkpoints" / "sweeps" / "AMy_M_Linear_Regression_20260226_160718"
 
 # Selection mode
 BEST_PER_MODEL = True          # True = one best config per architecture
@@ -43,12 +58,17 @@ TOP_K_OVERALL = 1              # used only if BEST_PER_MODEL=False
 # Paths inside the sweep run
 # -----------------------------
 SWEEP_RESULTS = SWEEP_RUN_DIR / "sweep_results.jsonl"
-FINAL_DIR = SWEEP_RUN_DIR / "final_eval"
+# Short output path under checkpoints (NOT inside sweeps/<long>/...)
+FINAL_DIR = TSLIB_DIR / "checkpoints" / "final_eval" / SWEEP_RUN_DIR.name
 FINAL_DIR.mkdir(parents=True, exist_ok=True)
 
+
 FINAL_RESULTS = FINAL_DIR / "final_results.json"
+
 LOG_DIR = FINAL_DIR / "logs"
-LOG_DIR.mkdir(parents=True, exist_ok=True)
+if WRITE_LOGS or WRITE_LOGS_ON_FAIL:
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+
 
 
 # -----------------------------
@@ -68,18 +88,22 @@ def load_jsonl(path: Path) -> List[Dict[str, Any]]:
     return rows
 
 
+
 def read_metrics(metrics_path: Path) -> Dict[str, Optional[float]]:
-    """
-    Reads metrics.jsonl produced by Exp_Short_Term_Forecast.
-    Returns:
-      best_val: best validation loss seen (from epoch_end rows)
-      test_mse: test mse (from test_end row)
-    """
     best_val = None
-    test_mse = None
+    out = {
+        "best_val": None,
+        "test_mse": None,
+        "test_rmse": None,
+        "test_mae": None,
+        "test_mape": None,
+        "test_smape": None,
+        "test_mspe": None,
+        "test_dtw": None,
+    }
 
     if not metrics_path.exists():
-        return {"best_val": None, "test_mse": None}
+        return out
 
     with metrics_path.open("r", encoding="utf-8") as f:
         for line in f:
@@ -97,11 +121,14 @@ def read_metrics(metrics_path: Path) -> Dict[str, Optional[float]]:
                     best_val = float(bv)
 
             if obj.get("event") == "test_end":
-                tm = obj.get("test_mse")
-                if isinstance(tm, (int, float)):
-                    test_mse = float(tm)
+                for k in list(out.keys()):
+                    v = obj.get(k)
+                    if isinstance(v, (int, float)):
+                        out[k] = float(v)
 
-    return {"best_val": best_val, "test_mse": test_mse}
+    out["best_val"] = best_val
+    return out
+
 
 
 def pick_best_per_model(trials: List[Dict[str, Any]], require_success: bool = True) -> List[Dict[str, Any]]:
@@ -145,8 +172,10 @@ def add_if_present(cmd: List[str], trial: Dict[str, Any], key: str, flag: str):
     if key in trial and trial[key] is not None:
         cmd += [flag, str(trial[key])]
 
-def build_cmd(trial: Dict[str, Any], exp_dir: Path, metrics_path: Path) -> List[str]:
-    model_id = f"final_{trial['model_id']}"
+def build_cmd(trial: Dict[str, Any], exp_dir: Path, metrics_path: Path, seed: int) -> List[str]:
+    # short model id so paths/checkpoints don't get long
+    model_id = f"final_{short_hash(trial['model_id'], n=12)}_s{seed}"
+
 
     cmd = [
         sys.executable, "run.py",
@@ -178,8 +207,10 @@ def build_cmd(trial: Dict[str, Any], exp_dir: Path, metrics_path: Path) -> List[
         "--dropout", str(trial.get("dropout", 0.0)),
 
         "--itr", str(ITR),
+        "--seed", str(seed),
         "--patience", str(PATIENCE),
         "--num_workers", str(NUM_WORKERS),
+
         "--des", DES,
 
         "--run_test", "1",
@@ -187,6 +218,7 @@ def build_cmd(trial: Dict[str, Any], exp_dir: Path, metrics_path: Path) -> List[
 
         "--exp_dir", str(exp_dir),
         "--metrics_path", str(metrics_path),
+        "--save_test_outputs",
     ]
 
     # Optional regularization (if present in sweep results)
@@ -219,20 +251,56 @@ def build_cmd(trial: Dict[str, Any], exp_dir: Path, metrics_path: Path) -> List[
 
 
 
-
-def run_cmd_to_log(cmd: List[str], cwd: Path, log_file: Path) -> int:
+def rank_key(r: Dict[str, Any]):
+    return (
+        r.get("test_mse_median") if r.get("test_mse_median") is not None else float("inf"),
+        r.get("test_mse_mean") if r.get("test_mse_mean") is not None else float("inf"),
+    )
+def run_cmd_maybe_log(cmd: List[str], cwd: Path, log_file: Path) -> int:
     env = os.environ.copy()
     env["PYTHONUNBUFFERED"] = "1"
-    with log_file.open("w", encoding="utf-8") as lf:
-        p = subprocess.Popen(
-            cmd,
-            cwd=str(cwd),
-            stdout=lf,
-            stderr=subprocess.STDOUT,
-            text=True,
-            env=env
-        )
+
+    if not WRITE_LOGS and not WRITE_LOGS_ON_FAIL:
+        # completely silent
+        p = subprocess.Popen(cmd, cwd=str(cwd),
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                             text=True, env=env)
         return p.wait()
+
+    # stream to a temp file
+    tmp_log = log_file.with_suffix(log_file.suffix + ".tmp")
+    log_file.parent.mkdir(parents=True, exist_ok=True)
+    with tmp_log.open("w", encoding="utf-8") as lf:
+        p = subprocess.Popen(cmd, cwd=str(cwd),
+                             stdout=lf, stderr=subprocess.STDOUT,
+                             text=True, env=env)
+        rc = p.wait()
+
+    if rc == 0 and WRITE_LOGS_ON_FAIL and not WRITE_LOGS:
+        # success: delete temp log
+        try:
+            tmp_log.unlink()
+        except Exception:
+            pass
+    else:
+        # keep log (rename tmp -> final)
+        try:
+            if log_file.exists():
+                log_file.unlink()
+            tmp_log.rename(log_file)
+        except Exception:
+            pass
+
+    return rc
+
+
+def mean_std(vals: List[Optional[float]]) -> Dict[str, Optional[float]]:
+    xs = [v for v in vals if isinstance(v, (int, float))]
+    if not xs:
+        return {"mean": None, "std": None, "median": None}
+    arr = np.array(xs, dtype=float)
+    return {"mean": float(arr.mean()), "std": float(arr.std(ddof=1)) if len(arr) > 1 else 0.0, "median": float(np.median(arr))}
+
 
 
 def main():
@@ -259,67 +327,134 @@ def main():
 
     final_rows: List[Dict[str, Any]] = []
 
+    seed_rows: List[Dict[str, Any]] = []   # store per-seed runs
+    agg_rows: List[Dict[str, Any]] = []    # store aggregated per config
+
     for i, trial in enumerate(selected, start=1):
         model = trial["model"]
         model_id = trial["model_id"]
 
-        # Each final run gets its own folder
-        run_name = f"{model}__{model_id}"
-        exp_dir = FINAL_DIR / "runs" / run_name
-        exp_dir.mkdir(parents=True, exist_ok=True)
+        run_tag = short_hash(model_id)  # stable short id based on sweep model_id
+        cfg_dir = FINAL_DIR / model / run_tag
+        cfg_dir.mkdir(parents=True, exist_ok=True)
 
-        metrics_path = exp_dir / "metrics.jsonl"
-        log_file = LOG_DIR / f"{run_name}.log"
+        # store full sweep trial info once
+        (cfg_dir / "trial.json").write_text(json.dumps(trial, indent=2), encoding="utf-8")
 
-        print(f"[{i}/{len(selected)}] RUN {model} | {model_id}")
+        print(f"[{i}/{len(selected)}] CONFIG {model} | {model_id} | tag={run_tag}")
 
-        cmd = build_cmd(trial, exp_dir=exp_dir, metrics_path=metrics_path)
+        # run each seed into its own folder
+        per_seed_metrics: List[Dict[str, Any]] = []
+        per_seed_seconds: List[float] = []
 
-        start = time.time()
-        rc = run_cmd_to_log(cmd, cwd=TSLIB_DIR, log_file=log_file)
-        seconds = time.time() - start
+        for seed in SEEDS:
+            exp_dir = cfg_dir / f"seed{seed}"
+            exp_dir.mkdir(parents=True, exist_ok=True)
 
-        metrics = read_metrics(metrics_path)
+            metrics_path = exp_dir / "metrics.jsonl"
+            log_file = LOG_DIR / f"{model}_{run_tag}_seed{seed}.log"
 
-        row = {
+            print(f"    -> seed {seed}  exp_dir={exp_dir}")
+
+            cmd = build_cmd(trial, exp_dir=exp_dir, metrics_path=metrics_path, seed=seed)
+
+            start = time.time()
+            rc = run_cmd_maybe_log(cmd, cwd=TSLIB_DIR, log_file=log_file)
+
+            seconds = time.time() - start
+
+            m = read_metrics(metrics_path)
+
+            seed_row = {
+                "model": model,
+                "sweep_model_id": model_id,
+                "config_tag": run_tag,
+                "seed": seed,
+
+                "exp_dir": str(exp_dir),
+                "metrics_path": str(metrics_path),
+                "log_file": str(log_file) if ((WRITE_LOGS) or (WRITE_LOGS_ON_FAIL and rc != 0)) else None,
+
+                "returncode": rc,
+                "seconds": seconds,
+
+                # hyperparams
+                "learning_rate": trial.get("learning_rate"),
+                "batch_size": trial.get("batch_size"),
+                "dropout": trial.get("dropout"),
+                "weight_decay": trial.get("weight_decay"),
+                "lstm_hidden": trial.get("lstm_hidden"),
+                "lstm_layers": trial.get("lstm_layers"),
+                "d_mark": trial.get("d_mark"),
+
+                # metrics
+                "best_val_loss": m.get("best_val"),
+                "test_mse": m.get("test_mse"),
+                "test_rmse": m.get("test_rmse"),
+                "test_mae": m.get("test_mae"),
+                "test_mape": m.get("test_mape"),
+                "test_smape": m.get("test_smape"),
+                "test_mspe": m.get("test_mspe"),
+                "test_dtw": m.get("test_dtw"),
+            }
+
+            seed_rows.append(seed_row)
+            per_seed_metrics.append(seed_row)
+            per_seed_seconds.append(seconds)
+
+            print(f"       rc={rc}  test_mse={seed_row['test_mse']}  best_val={seed_row['best_val_loss']}  secs={seconds:.1f}")
+
+        # aggregate across seeds (ignore missing/failed metrics)
+        def collect(key: str) -> List[Optional[float]]:
+            return [r.get(key) for r in per_seed_metrics if r.get("returncode") == 0]
+
+        agg = {
             "model": model,
             "sweep_model_id": model_id,
-            "final_model_id": f"final_{model_id}",
-            "exp_dir": str(exp_dir),
-            "metrics_path": str(metrics_path),
-            "log_file": str(log_file),
-            "returncode": rc,
-            "seconds": seconds,
+            "config_tag": run_tag,
+            "config_dir": str(cfg_dir),
 
-            # sweep hyperparams
+            # hyperparams (same for all seeds)
             "learning_rate": trial.get("learning_rate"),
             "batch_size": trial.get("batch_size"),
-            "d_model": trial.get("d_model"),
-            "e_layers": trial.get("e_layers"),
             "dropout": trial.get("dropout"),
+            "weight_decay": trial.get("weight_decay"),
+            "lstm_hidden": trial.get("lstm_hidden"),
+            "lstm_layers": trial.get("lstm_layers"),
+            "d_mark": trial.get("d_mark"),
 
-            # results from metrics.jsonl
-            "best_val_loss": metrics["best_val"],
-            "test_mse": metrics["test_mse"],
+            "n_seeds": len(SEEDS),
+            "n_success": sum(1 for r in per_seed_metrics if r.get("returncode") == 0),
         }
 
-        final_rows.append(row)
+        for k in ["test_mse", "test_rmse", "test_mae", "test_mape", "test_smape", "test_mspe", "test_dtw", "best_val_loss"]:
+            stats = mean_std(collect(k))
+            agg[f"{k}_mean"] = stats["mean"]
+            agg[f"{k}_std"] = stats["std"]
+            agg[f"{k}_median"] = stats["median"]
 
-        print(f"    rc={rc}  best_val={row['best_val_loss']}  test_mse={row['test_mse']}  time={seconds:.1f}s")
+        agg["seconds_mean"] = float(np.mean(per_seed_seconds)) if per_seed_seconds else None
+        agg_rows.append(agg)
 
-    FINAL_RESULTS.write_text(json.dumps(final_rows, indent=2), encoding="utf-8")
-    print("\nSaved:", FINAL_RESULTS)
+    # write per-seed and aggregated results
+    (FINAL_DIR / "seed_results.json").write_text(json.dumps(seed_rows, indent=2), encoding="utf-8")
+    FINAL_RESULTS.write_text(json.dumps(agg_rows, indent=2), encoding="utf-8")
+    print("\nSaved:")
+    print("  ", FINAL_DIR / "seed_results.json")
+    print("  ", FINAL_RESULTS)
 
-    # Ranking
-    def rank_key(r: Dict[str, Any]):
-        return (
-            r["test_mse"] if r["test_mse"] is not None else float("inf"),
-            r["best_val_loss"] if r["best_val_loss"] is not None else float("inf"),
+
+
+    print("\nFinal ranking (by median test_mse, then mean test_mse):")
+    for r in sorted(agg_rows, key=rank_key):
+        print(
+            f"  {r['model']:18s} "
+            f"median={r.get('test_mse_median')}  mean={r.get('test_mse_mean')}±{r.get('test_mse_std')}  "
+            f"n_ok={r.get('n_success')}/{r.get('n_seeds')}  tag={r.get('config_tag')}"
         )
 
-    print("\nFinal ranking (by test_mse, then best_val_loss):")
-    for r in sorted(final_rows, key=rank_key):
-        print(f"  {r['model']:12s}  test_mse={r['test_mse']}  best_val={r['best_val_loss']}  secs={r['seconds']:.1f}")
+
+
 
 
 if __name__ == "__main__":

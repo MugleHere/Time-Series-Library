@@ -15,9 +15,9 @@ from typing import Optional, List, Dict, Any, Tuple
 TSLIB_DIR = Path(__file__).resolve().parent  # folder containing run.py
 
 ROOT_PATH = Path(r"C:\Users\kasgr\Documents\Masteroppgave\master_repository\Master-s-Thesis\data\processed")
-DATA_PATH = "parquet_data_karmoy_2024_L42_processed.csv"
+DATA_PATH = "data_karmoy_2024_L42_processed.csv"
 
-N_FEATURES = 91
+N_FEATURES = 90
 
 TASK_NAME = "long_term_forecast"
 FEATURES_MODE = "M"
@@ -31,20 +31,22 @@ USE_GPU = False
 NUM_WORKERS = 0
 ITR = 1
 PATIENCE = 2
-EPOCHS = 3  # sweep epochs
+EPOCHS = 10  # sweep epochs
 HEARTBEAT_SEC = 30  # how often sweep prints progress
 
-MODELS = ["AMy_lstm"]
+MODELS = ["AMy_lstm"]#, "AMy_M_Linear_Regression"]
+#MODELS  ["TimesNet", "DLinear", "TimeXer, "TimeMixer"]  # ADVANCED MODELS
 
-LEARNING_RATES = [5e-4, 1e-4]
+LEARNING_RATES = [1e-5, 5e-4, 1e-3]
 BATCH_SIZES = [16, 32]
-DROPOUTS = [0.1]
+DROPOUTS = [0.0]
+WEIGHT_DECAYS = [1e-5]
 
 DEFAULT_GRID = {
     "learning_rate": LEARNING_RATES,
     "batch_size": BATCH_SIZES,
     "dropout": DROPOUTS,
-    "weight_decay": [0.0, 1e-4],
+    "weight_decay": WEIGHT_DECAYS,
 }
 
 MODEL_GRIDS = {
@@ -65,11 +67,11 @@ MODEL_GRIDS = {
         **DEFAULT_GRID,
         "d_mark": [5],                # set to your stamp dim (you printed 5)
         "lstm_hidden": [64, 128, 256],
-        "lstm_layers": [1],
-        "dropout": [0.0, 0.1],        # override if you want
+        "lstm_layers": [1],     
     },
 }
-
+def short_name(name: str) -> str:
+    return name.replace("AMy_", "").replace("_", "")
 
 
 
@@ -77,7 +79,9 @@ MODEL_GRIDS = {
 OUT_DIR = TSLIB_DIR / "checkpoints" / "sweeps"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-RUN_ID = time.strftime("%Y%m%d_%H%M%S")
+model_tag = "_".join(MODELS)
+RUN_ID = f"{model_tag}_{time.strftime('%Y%m%d_%H%M%S')}"
+
 RUN_DIR = OUT_DIR / RUN_ID
 RUN_DIR.mkdir(parents=True, exist_ok=True)
 

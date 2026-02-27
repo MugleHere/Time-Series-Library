@@ -8,10 +8,10 @@ import numpy as np
 from datetime import datetime
 
 if __name__ == '__main__':
-    fix_seed = 2021
-    random.seed(fix_seed)
-    torch.manual_seed(fix_seed)
-    np.random.seed(fix_seed)
+    #fix_seed = 2021
+    #random.seed(fix_seed)
+    #torch.manual_seed(fix_seed)
+    #np.random.seed(fix_seed)
 
     parser = argparse.ArgumentParser(description='TimesNet')
 
@@ -169,6 +169,10 @@ if __name__ == '__main__':
     parser.add_argument('--lstm_hidden', type=int, default=128, help='LSTM hidden size')
     parser.add_argument('--lstm_layers', type=int, default=1, help='number of LSTM layers')
 
+    parser.add_argument('--save_test_outputs', action='store_true', default=False,
+                    help='Save pred/true arrays and plots in results/test_results.')
+
+
 
     ####################
     parser.add_argument(
@@ -189,7 +193,23 @@ if __name__ == '__main__':
 
 
 
+    def set_all_seeds(seed: int):
+
+
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
+
+        # If you want deterministic behavior (optional; slows a bit):
+        # torch.backends.cudnn.deterministic = True
+        # torch.backends.cudnn.benchmark = False
+
     args = parser.parse_args()
+
+    set_all_seeds(args.seed)
+
     if args.baseline_mode:
         args.no_ckpt_load = True
         # Optional overrides if you ever run baselines with is_training=1
@@ -198,7 +218,8 @@ if __name__ == '__main__':
 
     if args.exp_dir is not None:
         # Make checkpoints land inside the trial folder
-        args.checkpoints = os.path.join(args.exp_dir, "checkpoints")
+        args.checkpoints = args.exp_dir
+
         os.makedirs(args.checkpoints, exist_ok=True)
 
         # Default metrics path inside exp_dir if not provided
