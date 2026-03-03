@@ -7,12 +7,7 @@ import random
 import numpy as np
 from datetime import datetime
 
-if __name__ == '__main__':
-    #fix_seed = 2021
-    #random.seed(fix_seed)
-    #torch.manual_seed(fix_seed)
-    #np.random.seed(fix_seed)
-
+def build_parser():
     parser = argparse.ArgumentParser(description='TimesNet')
 
     # basic config
@@ -180,33 +175,48 @@ if __name__ == '__main__':
     action='store_true',
     default=False,
     help='When testing without training, skip checkpoint loading (use current model weights). Useful for baselines.'
-)
+    )
     
     parser.add_argument(
     '--baseline_mode',
     action='store_true',
     default=False,
     help='Convenience flag for baselines: implies --no_ckpt_load and can override training-related args if desired.'
-)
+    )
+    return parser
+
+def parse_args(cli_args=None):
+    parser = build_parser()
+    args = parser.parse_args(cli_args)
+    return args
+def set_all_seeds(seed: int):
+
+
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+    # If you want deterministic behavior (optional; slows a bit):
+    # torch.backends.cudnn.deterministic = True
+    # torch.backends.cudnn.benchmark = False
+
+if __name__ == '__main__':
+    #fix_seed = 2021
+    #random.seed(fix_seed)
+    #torch.manual_seed(fix_seed)
+    #np.random.seed(fix_seed)
 
 
 
 
 
-    def set_all_seeds(seed: int):
 
 
-        random.seed(seed)
-        np.random.seed(seed)
-        torch.manual_seed(seed)
-        if torch.cuda.is_available():
-            torch.cuda.manual_seed_all(seed)
 
-        # If you want deterministic behavior (optional; slows a bit):
-        # torch.backends.cudnn.deterministic = True
-        # torch.backends.cudnn.benchmark = False
 
-    args = parser.parse_args()
+    args = parse_args()
 
     set_all_seeds(args.seed)
 

@@ -114,7 +114,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         return total_loss
 
 
-    def train(self, setting):
+    def train(self, setting,epoch_cb=None):
         metrics_path = getattr(self.args, "metrics_path", None)
         quiet = getattr(self.args, "quiet", False)
         self._append_jsonl(metrics_path, {
@@ -135,11 +135,13 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         vali_data, vali_loader = self._get_data(flag='val')
 
         # Path logic: if exp_dir is set, keep everything inside args.checkpoints (already inside exp_dir/checkpoints)
+        # --- output directory ---
         if getattr(self.args, "exp_dir", None):
-            path = self.args.checkpoints
+            path = self.args.exp_dir
         else:
             path = os.path.join(self.args.checkpoints, setting)
         os.makedirs(path, exist_ok=True)
+
 
 
 
@@ -263,6 +265,17 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                 "model_id": str(self.args.model_id),
                 "data": str(self.args.data),
             })
+                        # Optuna hook: report metrics + allow pruning
+            if epoch_cb is not None:
+                epoch_cb(epoch + 1, {
+                    "train_loss": train_loss,
+                    "val_loss": vali_loss,
+                    "best_val": best_val,
+                    "best_epoch": best_epoch,
+                    "lr": lr,
+                    "elapsed_sec": elapsed,
+                })
+
 
             # Save last.pth
             self._save_last_ckpt(path, epoch + 1, model_optim, train_loss, vali_loss)
@@ -299,6 +312,14 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         best_model_path = os.path.join(path, 'checkpoint.pth')
         if os.path.exists(best_model_path):
             self._load_ckpt_flexible(best_model_path)
+                    # Copy best checkpoint to a stable filename for sweeps/tuning
+            try:
+                import shutil
+                if os.path.exists(best_model_path):
+                    shutil.copy2(best_model_path, os.path.join(path, "best.pth"))
+            except Exception:
+                pass
+
         else:
             print(f"[warn] No checkpoint found at {best_model_path}. Returning last epoch weights.")
         return self.model
@@ -313,9 +334,10 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
         # Determine run directory (for loading ckpt and saving results)
         if getattr(self.args, "exp_dir", None):
-            run_dir = self.args.checkpoints
+            run_dir = self.args.exp_dir
         else:
             run_dir = os.path.join(self.args.checkpoints, setting)
+            
 
         # Load checkpoint if requested
         if test and (not getattr(self.args, "no_ckpt_load", False)):
