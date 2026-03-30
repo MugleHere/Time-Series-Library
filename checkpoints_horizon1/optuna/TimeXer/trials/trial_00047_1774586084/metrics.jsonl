@@ -1,0 +1,91 @@
+{"event": "run_start", "model": "TimeXer", "model_id": "trial_00047_1774586084", "data": "MYDATA", "seq_len": 48, "label_len": 24, "pred_len": 1, "batch_size": 16, "learning_rate": 0.0008420984236839935, "weight_decay": 1.4609835046044094e-05, "dropout": 0.05177428856743034}
+{"event": "batch_beat", "epoch": 1, "iter": 0, "loss": 0.3679966926574707, "elapsed_sec": 0.060924530029296875}
+{"event": "batch_beat", "epoch": 1, "iter": 200, "loss": 0.102086141705513, "elapsed_sec": 13.085482120513916}
+{"event": "batch_beat", "epoch": 1, "iter": 400, "loss": 0.010207884013652802, "elapsed_sec": 26.405316591262817}
+{"event": "batch_beat", "epoch": 1, "iter": 600, "loss": 0.016395997256040573, "elapsed_sec": 39.634217500686646}
+{"event": "batch_beat", "epoch": 1, "iter": 800, "loss": 0.04122612252831459, "elapsed_sec": 53.25874328613281}
+{"event": "batch_beat", "epoch": 1, "iter": 1000, "loss": 0.04296784847974777, "elapsed_sec": 66.95833945274353}
+{"event": "batch_beat", "epoch": 1, "iter": 1200, "loss": 0.14116235077381134, "elapsed_sec": 80.29609870910645}
+{"event": "batch_beat", "epoch": 1, "iter": 1400, "loss": 0.012045558542013168, "elapsed_sec": 93.80038022994995}
+{"event": "epoch_end", "epoch": 1, "train_loss": 0.22744086872915747, "val_loss": 0.02990538454878929, "best_val": 0.02990538454878929, "best_epoch": 1, "lr": 0.0008420984236839935, "elapsed_sec": 111.34365916252136, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "TimeXer", "model_id": "trial_00047_1774586084", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 2, "iter": 0, "loss": 0.08027157187461853, "elapsed_sec": 111.4232337474823}
+{"event": "batch_beat", "epoch": 2, "iter": 200, "loss": 0.01816924661397934, "elapsed_sec": 124.60067915916443}
+{"event": "batch_beat", "epoch": 2, "iter": 400, "loss": 0.008070244453847408, "elapsed_sec": 138.23913288116455}
+{"event": "batch_beat", "epoch": 2, "iter": 600, "loss": 0.056778792291879654, "elapsed_sec": 151.13023161888123}
+{"event": "batch_beat", "epoch": 2, "iter": 800, "loss": 0.14102502167224884, "elapsed_sec": 164.59954118728638}
+{"event": "batch_beat", "epoch": 2, "iter": 1000, "loss": 0.01189746055752039, "elapsed_sec": 178.19492292404175}
+{"event": "batch_beat", "epoch": 2, "iter": 1200, "loss": 0.03134416043758392, "elapsed_sec": 191.59084558486938}
+{"event": "batch_beat", "epoch": 2, "iter": 1400, "loss": 0.04018746316432953, "elapsed_sec": 204.95223474502563}
+{"event": "epoch_end", "epoch": 2, "train_loss": 0.17756374236344988, "val_loss": 0.029033090688459023, "best_val": 0.029033090688459023, "best_epoch": 2, "lr": 0.0008420984236839935, "elapsed_sec": 222.6934585571289, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "TimeXer", "model_id": "trial_00047_1774586084", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 3, "iter": 0, "loss": 0.037926580756902695, "elapsed_sec": 222.77560019493103}
+{"event": "batch_beat", "epoch": 3, "iter": 200, "loss": 0.02979816123843193, "elapsed_sec": 236.16461300849915}
+{"event": "batch_beat", "epoch": 3, "iter": 400, "loss": 0.025365358218550682, "elapsed_sec": 249.48982071876526}
+{"event": "batch_beat", "epoch": 3, "iter": 600, "loss": 0.06685527414083481, "elapsed_sec": 262.9990870952606}
+{"event": "batch_beat", "epoch": 3, "iter": 800, "loss": 0.007392770145088434, "elapsed_sec": 275.7451961040497}
+{"event": "batch_beat", "epoch": 3, "iter": 1000, "loss": 0.02131716161966324, "elapsed_sec": 288.8426625728607}
+{"event": "batch_beat", "epoch": 3, "iter": 1200, "loss": 0.017682602629065514, "elapsed_sec": 301.94038701057434}
+{"event": "batch_beat", "epoch": 3, "iter": 1400, "loss": 0.3123563230037689, "elapsed_sec": 314.8410918712616}
+{"event": "epoch_end", "epoch": 3, "train_loss": 0.1422193741172047, "val_loss": 0.021657096949003345, "best_val": 0.021657096949003345, "best_epoch": 3, "lr": 0.00042104921184199674, "elapsed_sec": 331.8171184062958, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "TimeXer", "model_id": "trial_00047_1774586084", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 4, "iter": 0, "loss": 0.021163782104849815, "elapsed_sec": 331.90469765663147}
+{"event": "batch_beat", "epoch": 4, "iter": 200, "loss": 0.014645244926214218, "elapsed_sec": 345.10421872138977}
+{"event": "batch_beat", "epoch": 4, "iter": 400, "loss": 0.11429092288017273, "elapsed_sec": 357.9501621723175}
+{"event": "batch_beat", "epoch": 4, "iter": 600, "loss": 4.105258464813232, "elapsed_sec": 371.53576040267944}
+{"event": "batch_beat", "epoch": 4, "iter": 800, "loss": 0.022883471101522446, "elapsed_sec": 384.90366888046265}
+{"event": "batch_beat", "epoch": 4, "iter": 1000, "loss": 0.769354522228241, "elapsed_sec": 398.6301369667053}
+{"event": "batch_beat", "epoch": 4, "iter": 1200, "loss": 0.006995320785790682, "elapsed_sec": 412.55010294914246}
+{"event": "batch_beat", "epoch": 4, "iter": 1400, "loss": 0.007965454831719398, "elapsed_sec": 425.87622833251953}
+{"event": "epoch_end", "epoch": 4, "train_loss": 0.1279920644311114, "val_loss": 0.02134668153423946, "best_val": 0.02134668153423946, "best_epoch": 4, "lr": 0.00021052460592099837, "elapsed_sec": 443.10049867630005, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "TimeXer", "model_id": "trial_00047_1774586084", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 5, "iter": 0, "loss": 0.004858530126512051, "elapsed_sec": 443.18815183639526}
+{"event": "batch_beat", "epoch": 5, "iter": 200, "loss": 0.03659476339817047, "elapsed_sec": 456.46727180480957}
+{"event": "batch_beat", "epoch": 5, "iter": 400, "loss": 0.008010833524167538, "elapsed_sec": 469.79111194610596}
+{"event": "batch_beat", "epoch": 5, "iter": 600, "loss": 6.9001383781433105, "elapsed_sec": 482.78413915634155}
+{"event": "batch_beat", "epoch": 5, "iter": 800, "loss": 0.006629816256463528, "elapsed_sec": 495.6506156921387}
+{"event": "batch_beat", "epoch": 5, "iter": 1000, "loss": 0.09935479611158371, "elapsed_sec": 508.4953682422638}
+{"event": "batch_beat", "epoch": 5, "iter": 1200, "loss": 0.005428706761449575, "elapsed_sec": 521.6842784881592}
+{"event": "batch_beat", "epoch": 5, "iter": 1400, "loss": 0.020620884373784065, "elapsed_sec": 535.5517249107361}
+{"event": "epoch_end", "epoch": 5, "train_loss": 0.12280169566501335, "val_loss": 0.01983779903621246, "best_val": 0.01983779903621246, "best_epoch": 5, "lr": 0.00010526230296049919, "elapsed_sec": 553.1545555591583, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "TimeXer", "model_id": "trial_00047_1774586084", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 6, "iter": 0, "loss": 0.017765149474143982, "elapsed_sec": 553.2431387901306}
+{"event": "batch_beat", "epoch": 6, "iter": 200, "loss": 0.01400535274296999, "elapsed_sec": 566.3994793891907}
+{"event": "batch_beat", "epoch": 6, "iter": 400, "loss": 0.09186980873346329, "elapsed_sec": 579.32963514328}
+{"event": "batch_beat", "epoch": 6, "iter": 600, "loss": 0.0644577220082283, "elapsed_sec": 592.5805354118347}
+{"event": "batch_beat", "epoch": 6, "iter": 800, "loss": 0.005824096500873566, "elapsed_sec": 606.0379643440247}
+{"event": "batch_beat", "epoch": 6, "iter": 1000, "loss": 0.04157569631934166, "elapsed_sec": 618.9449219703674}
+{"event": "batch_beat", "epoch": 6, "iter": 1200, "loss": 0.006790592800825834, "elapsed_sec": 631.1303145885468}
+{"event": "batch_beat", "epoch": 6, "iter": 1400, "loss": 2.59537410736084, "elapsed_sec": 643.6223895549774}
+{"event": "epoch_end", "epoch": 6, "train_loss": 0.11973713694414988, "val_loss": 0.019490811004868696, "best_val": 0.019490811004868696, "best_epoch": 6, "lr": 5.263115148024959e-05, "elapsed_sec": 661.0046243667603, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "TimeXer", "model_id": "trial_00047_1774586084", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 7, "iter": 0, "loss": 0.04716992378234863, "elapsed_sec": 661.0758376121521}
+{"event": "batch_beat", "epoch": 7, "iter": 200, "loss": 0.034052371978759766, "elapsed_sec": 674.8282930850983}
+{"event": "batch_beat", "epoch": 7, "iter": 400, "loss": 0.0035813685972243547, "elapsed_sec": 687.9820194244385}
+{"event": "batch_beat", "epoch": 7, "iter": 600, "loss": 0.007925203070044518, "elapsed_sec": 701.0943546295166}
+{"event": "batch_beat", "epoch": 7, "iter": 800, "loss": 0.009312768466770649, "elapsed_sec": 714.3079926967621}
+{"event": "batch_beat", "epoch": 7, "iter": 1000, "loss": 0.011400963179767132, "elapsed_sec": 727.330623626709}
+{"event": "batch_beat", "epoch": 7, "iter": 1200, "loss": 0.023527609184384346, "elapsed_sec": 740.6952667236328}
+{"event": "batch_beat", "epoch": 7, "iter": 1400, "loss": 0.006838282570242882, "elapsed_sec": 753.915755033493}
+{"event": "epoch_end", "epoch": 7, "train_loss": 0.11777915305655703, "val_loss": 0.01943569991678634, "best_val": 0.01943569991678634, "best_epoch": 7, "lr": 2.6315575740124797e-05, "elapsed_sec": 771.4987750053406, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "TimeXer", "model_id": "trial_00047_1774586084", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 8, "iter": 0, "loss": 0.08393629640340805, "elapsed_sec": 771.5857396125793}
+{"event": "batch_beat", "epoch": 8, "iter": 200, "loss": 0.02248494327068329, "elapsed_sec": 784.6761825084686}
+{"event": "batch_beat", "epoch": 8, "iter": 400, "loss": 0.007324019446969032, "elapsed_sec": 797.8801147937775}
+{"event": "batch_beat", "epoch": 8, "iter": 600, "loss": 0.10122835636138916, "elapsed_sec": 811.1503496170044}
+{"event": "batch_beat", "epoch": 8, "iter": 800, "loss": 0.015465736389160156, "elapsed_sec": 824.1851394176483}
+{"event": "batch_beat", "epoch": 8, "iter": 1000, "loss": 0.022083014249801636, "elapsed_sec": 837.0967025756836}
+{"event": "batch_beat", "epoch": 8, "iter": 1200, "loss": 0.026872823014855385, "elapsed_sec": 850.5382826328278}
+{"event": "batch_beat", "epoch": 8, "iter": 1400, "loss": 0.00343669974245131, "elapsed_sec": 863.691104888916}
+{"event": "epoch_end", "epoch": 8, "train_loss": 0.11634772762748936, "val_loss": 0.01924878864917156, "best_val": 0.01924878864917156, "best_epoch": 8, "lr": 1.3157787870062398e-05, "elapsed_sec": 881.7264559268951, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "TimeXer", "model_id": "trial_00047_1774586084", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 9, "iter": 0, "loss": 0.06742098927497864, "elapsed_sec": 881.7989144325256}
+{"event": "batch_beat", "epoch": 9, "iter": 200, "loss": 0.006948161870241165, "elapsed_sec": 894.8714799880981}
+{"event": "batch_beat", "epoch": 9, "iter": 400, "loss": 0.004035549703985453, "elapsed_sec": 907.9050540924072}
+{"event": "batch_beat", "epoch": 9, "iter": 600, "loss": 0.05162455141544342, "elapsed_sec": 921.1530165672302}
+{"event": "batch_beat", "epoch": 9, "iter": 800, "loss": 0.09323403984308243, "elapsed_sec": 933.9942224025726}
+{"event": "batch_beat", "epoch": 9, "iter": 1000, "loss": 0.016019770875573158, "elapsed_sec": 947.2108535766602}
+{"event": "batch_beat", "epoch": 9, "iter": 1200, "loss": 0.01045931875705719, "elapsed_sec": 960.4668231010437}
+{"event": "batch_beat", "epoch": 9, "iter": 1400, "loss": 0.030722226947546005, "elapsed_sec": 974.1933727264404}
+{"event": "epoch_end", "epoch": 9, "train_loss": 0.1149487496791355, "val_loss": 0.019164593453116423, "best_val": 0.019164593453116423, "best_epoch": 9, "lr": 6.578893935031199e-06, "elapsed_sec": 990.6915056705475, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "TimeXer", "model_id": "trial_00047_1774586084", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 10, "iter": 0, "loss": 0.03990261256694794, "elapsed_sec": 990.7707824707031}
+{"event": "batch_beat", "epoch": 10, "iter": 200, "loss": 0.01558083388954401, "elapsed_sec": 1003.8624744415283}
+{"event": "batch_beat", "epoch": 10, "iter": 400, "loss": 0.014063776470720768, "elapsed_sec": 1017.1453273296356}
+{"event": "batch_beat", "epoch": 10, "iter": 600, "loss": 0.01497761532664299, "elapsed_sec": 1030.2439806461334}
+{"event": "batch_beat", "epoch": 10, "iter": 800, "loss": 0.014895275235176086, "elapsed_sec": 1043.1594805717468}
+{"event": "batch_beat", "epoch": 10, "iter": 1000, "loss": 0.19565948843955994, "elapsed_sec": 1056.0314450263977}
+{"event": "batch_beat", "epoch": 10, "iter": 1200, "loss": 0.009828442707657814, "elapsed_sec": 1069.0457417964935}
+{"event": "batch_beat", "epoch": 10, "iter": 1400, "loss": 0.00859261304140091, "elapsed_sec": 1082.3272035121918}
+{"event": "epoch_end", "epoch": 10, "train_loss": 0.11218159188867506, "val_loss": 0.019141257324715565, "best_val": 0.019141257324715565, "best_epoch": 10, "lr": 3.2894469675155996e-06, "elapsed_sec": 1099.3026766777039, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "TimeXer", "model_id": "trial_00047_1774586084", "data": "MYDATA"}

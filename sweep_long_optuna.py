@@ -1,3 +1,13 @@
+import os
+os.environ["OMP_NUM_THREADS"] = "12"
+os.environ["MKL_NUM_THREADS"] = "12"
+os.environ["OPENBLAS_NUM_THREADS"] = "12"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "12"
+os.environ["NUMEXPR_NUM_THREADS"] = "12"
+
+import torch
+torch.set_num_threads(12)
+torch.set_num_interop_threads(1)
 import json
 import time
 from pathlib import Path
@@ -9,7 +19,7 @@ from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
 
 
 TSLIB_DIR = Path(__file__).resolve().parent
-OUT_DIR = TSLIB_DIR / "checkpoints" / "optuna"
+OUT_DIR = TSLIB_DIR / "checkpoints_horizon1" / "optuna"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # ---- Fixed experiment settings (yours) ----
@@ -18,7 +28,7 @@ COMMON = dict(
     is_training=1,
     data="MYDATA",
     root_path="/home/ubuntu/Time-Series-Library/data_",
-    data_path="data_karmoy_2024_L42_processed.csv",
+    data_path="data_karmoy_to_2024_L42_processed.csv",
 
     features="M",
     target="OT",
@@ -32,7 +42,7 @@ COMMON = dict(
     c_out=90,
 
     itr=1,
-    patience=2,
+    patience=5,
     train_epochs=10,   # tuning epochs
     num_workers=0,
 
@@ -41,10 +51,10 @@ COMMON = dict(
 
     # Force CPU
     no_use_gpu=True,
+    no_save_ckpt=True,
 )
 
-#MODELS = ["AMy_lstm"]  # add more like "TimeMixer", "DLinear", ...
-MODELS = ["DLinear", "TimeXer", "TimeMixer", "AMy_M_Linear_Regression", "FEDformer", "PatchTST", "iTransformer","Nonstationary_Transformer"]  #Removed "TimesNet" because of speed
+MODELS = ["DLinear", "TimeXer", "TimeMixer", "AMy_M_Linear_Regression","TimesNet","PatchTST","Nonstationary_Transformer", "iTransformer", "FEDformer", "Autoformer", "Informer","Transformer","Crossformer","Reformer","AMy_lstm"]  
 
 
 def suggest_params(trial: optuna.Trial, model: str) -> dict:
@@ -59,7 +69,7 @@ def suggest_params(trial: optuna.Trial, model: str) -> dict:
         p.update({
             "d_mark": 5,
             "lstm_hidden": trial.suggest_categorical("lstm_hidden", [32, 64, 128, 256]),
-            "lstm_layers": trial.suggest_int("lstm_layers", 1, 3),
+            "lstm_layers":  1,
         })
 
 
@@ -70,6 +80,67 @@ def suggest_params(trial: optuna.Trial, model: str) -> dict:
             "down_sampling_window": 2,
             "channel_independence": 0,
         })
+    # -------------------------
+    # CPU-friendly architecture caps (keep fixed across trials)
+    # -------------------------
+
+    if model == "PatchTST":
+        # Much smaller than defaults -> feasible on CPU
+        p.update({
+            "d_model": 64,
+            "n_heads": 4,     # must divide d_model
+            "e_layers": 2,
+            "d_ff": 256,
+            "patch_len": 16,
+        })
+
+    if model == "iTransformer":
+        p.update({
+            "d_model": 64,
+            "n_heads": 4,
+            "e_layers": 2,
+            "d_ff": 256,
+            "factor": 1,
+        })
+
+    if model == "TimeXer":
+        p.update({
+            "d_model": 64,
+            "n_heads": 4,
+            "e_layers": 2,
+            "d_ff": 256,
+            "patch_len": 16,
+        })
+
+    # TimeMixer is already partly constrained; make it smaller too
+    if model == "TimeMixer":
+        p.update({
+            "d_model": 64,
+            "e_layers": 2,
+            "d_ff": 256,
+        })
+    if model == "TimesNet":
+        p.update({
+            "d_model": 64,
+            "n_heads": 4,
+            "e_layers": 2,
+            "d_ff": 128,      # 256 is ok too, 128 is faster
+            "top_k": 3,       # default is often 5 -> cheaper
+            "num_kernels": 3, # default often 6 -> cheaper
+            "dropout": p["dropout"],
+        })
+    if model == "FEDformer":
+        p.update({
+            "d_model": 32,
+            "n_heads": 2,
+            "e_layers": 1,   # huge speed win vs 2+
+            "d_layers": 1,
+            "d_ff": 64,     # 256 if you can afford it
+            "factor": 1,
+            "moving_avg": 7,  # smaller decomposition window (faster)
+        })
+
+
 
 
     return p
@@ -113,6 +184,11 @@ def make_args(model: str, model_id: str, exp_dir: Path, metrics_path: Path, para
         args_list += ["--down_sampling_layers", str(params["down_sampling_layers"])]
         args_list += ["--down_sampling_window", str(params["down_sampling_window"])]
         args_list += ["--channel_independence", str(params["channel_independence"])]
+        # architecture (only present for some models)
+    for k in ["d_model", "n_heads", "e_layers", "d_layers", "d_ff", "factor",
+          "patch_len", "top_k", "num_kernels", "moving_avg", "seg_len"]:
+        if k in params:
+            args_list += [f"--{k}", str(params[k])]
 
     return run.parse_args(args_list)
 
@@ -147,13 +223,15 @@ def tune_model(model: str, n_trials: int = 50):
         load_if_exists=True,
         sampler=optuna.samplers.TPESampler(seed=42),
         pruner=optuna.pruners.HyperbandPruner(
-            min_resource=3,
+            min_resource=5,
             max_resource=COMMON["train_epochs"],
             reduction_factor=3,
         ),
     )
 
     def objective(trial: optuna.Trial):
+        import os, threading, time
+        print(f"[objective start] trial={trial.number} pid={os.getpid()} tid={threading.get_ident()} t={time.time()}", flush=True)
         params = suggest_params(trial, model)
 
         run_id = f"trial_{trial.number:05d}_{int(time.time())}"
@@ -174,6 +252,9 @@ def tune_model(model: str, n_trials: int = 50):
         try:
             exp.train(setting=f"{model}_{run_id}", epoch_cb=epoch_cb)
             best_val = read_best_val(metrics_path)
+            # Delete all checkpoint files but keep metrics.jsonl
+
+
             if best_val is None:
                 raise optuna.exceptions.TrialPruned()
             return best_val
@@ -189,6 +270,8 @@ def tune_model(model: str, n_trials: int = 50):
                 "metrics_path": str(metrics_path),
                 "time": time.strftime("%Y-%m-%d %H:%M:%S"),
             })
+            # Delete all checkpoint files but keep metrics.jsonl
+
             raise
 
         except KeyboardInterrupt:
@@ -240,7 +323,17 @@ def tune_model(model: str, n_trials: int = 50):
         return
 
 
-    study.optimize(objective, n_trials=remaining,catch=(KeyboardInterrupt,))
+    study.optimize(objective, n_trials=remaining,n_jobs=1,catch=(KeyboardInterrupt,))
+    # Keep only best trial directory
+    best_trial_number = study.best_trial.number
+
+    for t in study.trials:
+        if t.number != best_trial_number:
+            run_id_prefix = f"trial_{t.number:05d}_"
+            for d in trials_dir.iterdir():
+                if d.is_dir() and d.name.startswith(run_id_prefix):
+                    import shutil
+                    shutil.rmtree(d, ignore_errors=True)
 
     best = {"best_value": study.best_value, "best_params": study.best_params}
     (model_dir / "best_params.json").write_text(json.dumps(best, indent=2), encoding="utf-8")

@@ -1,0 +1,51 @@
+{"event": "run_start", "model": "iTransformer", "model_id": "trial_00039_1774763011", "data": "MYDATA", "seq_len": 48, "label_len": 24, "pred_len": 1, "batch_size": 32, "learning_rate": 0.0007077023572715657, "weight_decay": 0.0027141293521380635, "dropout": 0.03321797373762904}
+{"event": "batch_beat", "epoch": 1, "iter": 0, "loss": 0.42258507013320923, "elapsed_sec": 0.029373645782470703}
+{"event": "batch_beat", "epoch": 1, "iter": 200, "loss": 0.35358068346977234, "elapsed_sec": 5.52936053276062}
+{"event": "batch_beat", "epoch": 1, "iter": 400, "loss": 0.013450167141854763, "elapsed_sec": 11.07250690460205}
+{"event": "batch_beat", "epoch": 1, "iter": 600, "loss": 0.12215226143598557, "elapsed_sec": 16.785248279571533}
+{"event": "epoch_end", "epoch": 1, "train_loss": 0.19115935780867954, "val_loss": 0.022829933583979372, "best_val": 0.022829933583979372, "best_epoch": 1, "lr": 0.0007077023572715657, "elapsed_sec": 23.672552824020386, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "iTransformer", "model_id": "trial_00039_1774763011", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 2, "iter": 0, "loss": 0.008718260563910007, "elapsed_sec": 23.710383653640747}
+{"event": "batch_beat", "epoch": 2, "iter": 200, "loss": 0.09561461210250854, "elapsed_sec": 29.569780111312866}
+{"event": "batch_beat", "epoch": 2, "iter": 400, "loss": 0.024537988007068634, "elapsed_sec": 35.013158559799194}
+{"event": "batch_beat", "epoch": 2, "iter": 600, "loss": 0.018517393618822098, "elapsed_sec": 40.758628129959106}
+{"event": "epoch_end", "epoch": 2, "train_loss": 0.14959213141677144, "val_loss": 0.03446136550248965, "best_val": 0.022829933583979372, "best_epoch": 1, "lr": 0.0007077023572715657, "elapsed_sec": 47.28615999221802, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "iTransformer", "model_id": "trial_00039_1774763011", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 3, "iter": 0, "loss": 0.011665984988212585, "elapsed_sec": 47.32407760620117}
+{"event": "batch_beat", "epoch": 3, "iter": 200, "loss": 0.3221345841884613, "elapsed_sec": 52.73619818687439}
+{"event": "batch_beat", "epoch": 3, "iter": 400, "loss": 0.021837374195456505, "elapsed_sec": 58.4477915763855}
+{"event": "batch_beat", "epoch": 3, "iter": 600, "loss": 0.01681710034608841, "elapsed_sec": 64.04743456840515}
+{"event": "epoch_end", "epoch": 3, "train_loss": 0.13525670239129553, "val_loss": 0.021395476573430324, "best_val": 0.021395476573430324, "best_epoch": 3, "lr": 0.00035385117863578284, "elapsed_sec": 70.76249313354492, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "iTransformer", "model_id": "trial_00039_1774763011", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 4, "iter": 0, "loss": 0.005457113962620497, "elapsed_sec": 70.80179524421692}
+{"event": "batch_beat", "epoch": 4, "iter": 200, "loss": 0.016092445701360703, "elapsed_sec": 76.41872835159302}
+{"event": "batch_beat", "epoch": 4, "iter": 400, "loss": 0.041092850267887115, "elapsed_sec": 82.37933802604675}
+{"event": "batch_beat", "epoch": 4, "iter": 600, "loss": 0.015671368688344955, "elapsed_sec": 87.84871792793274}
+{"event": "epoch_end", "epoch": 4, "train_loss": 0.12483930046925408, "val_loss": 0.022685930274588907, "best_val": 0.021395476573430324, "best_epoch": 3, "lr": 0.00017692558931789142, "elapsed_sec": 94.5025405883789, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "iTransformer", "model_id": "trial_00039_1774763011", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 5, "iter": 0, "loss": 0.009966699406504631, "elapsed_sec": 94.53761577606201}
+{"event": "batch_beat", "epoch": 5, "iter": 200, "loss": 0.036812640726566315, "elapsed_sec": 100.3542468547821}
+{"event": "batch_beat", "epoch": 5, "iter": 400, "loss": 0.006610797718167305, "elapsed_sec": 106.12244606018066}
+{"event": "batch_beat", "epoch": 5, "iter": 600, "loss": 0.16424450278282166, "elapsed_sec": 112.15500664710999}
+{"event": "epoch_end", "epoch": 5, "train_loss": 0.12319035510309927, "val_loss": 0.020430304634425304, "best_val": 0.020430304634425304, "best_epoch": 5, "lr": 8.846279465894571e-05, "elapsed_sec": 118.60941863059998, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "iTransformer", "model_id": "trial_00039_1774763011", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 6, "iter": 0, "loss": 0.07665741443634033, "elapsed_sec": 118.66319012641907}
+{"event": "batch_beat", "epoch": 6, "iter": 200, "loss": 0.013669325038790703, "elapsed_sec": 124.63276267051697}
+{"event": "batch_beat", "epoch": 6, "iter": 400, "loss": 0.0101420683786273, "elapsed_sec": 130.31124210357666}
+{"event": "batch_beat", "epoch": 6, "iter": 600, "loss": 0.25263625383377075, "elapsed_sec": 135.78975796699524}
+{"event": "epoch_end", "epoch": 6, "train_loss": 0.12217660474116554, "val_loss": 0.020268822594991198, "best_val": 0.020268822594991198, "best_epoch": 6, "lr": 4.4231397329472855e-05, "elapsed_sec": 142.44056057929993, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "iTransformer", "model_id": "trial_00039_1774763011", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 7, "iter": 0, "loss": 0.034177519381046295, "elapsed_sec": 142.4793918132782}
+{"event": "batch_beat", "epoch": 7, "iter": 200, "loss": 0.013746888376772404, "elapsed_sec": 148.34210896492004}
+{"event": "batch_beat", "epoch": 7, "iter": 400, "loss": 0.04917273670434952, "elapsed_sec": 154.01495718955994}
+{"event": "batch_beat", "epoch": 7, "iter": 600, "loss": 0.02209172584116459, "elapsed_sec": 159.59632873535156}
+{"event": "epoch_end", "epoch": 7, "train_loss": 0.11979460857315537, "val_loss": 0.020059683113156455, "best_val": 0.020059683113156455, "best_epoch": 7, "lr": 2.2115698664736427e-05, "elapsed_sec": 166.1236355304718, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "iTransformer", "model_id": "trial_00039_1774763011", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 8, "iter": 0, "loss": 0.12797845900058746, "elapsed_sec": 166.16826391220093}
+{"event": "batch_beat", "epoch": 8, "iter": 200, "loss": 0.05352453142404556, "elapsed_sec": 171.65186977386475}
+{"event": "batch_beat", "epoch": 8, "iter": 400, "loss": 0.12073823809623718, "elapsed_sec": 177.24473524093628}
+{"event": "batch_beat", "epoch": 8, "iter": 600, "loss": 0.0735892727971077, "elapsed_sec": 182.96263527870178}
+{"event": "epoch_end", "epoch": 8, "train_loss": 0.11926337610318259, "val_loss": 0.02011953659720071, "best_val": 0.020059683113156455, "best_epoch": 7, "lr": 1.1057849332368214e-05, "elapsed_sec": 189.72777247428894, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "iTransformer", "model_id": "trial_00039_1774763011", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 9, "iter": 0, "loss": 0.01570417918264866, "elapsed_sec": 189.76745295524597}
+{"event": "batch_beat", "epoch": 9, "iter": 200, "loss": 0.01982850581407547, "elapsed_sec": 195.2246708869934}
+{"event": "batch_beat", "epoch": 9, "iter": 400, "loss": 0.014248267747461796, "elapsed_sec": 200.91768836975098}
+{"event": "batch_beat", "epoch": 9, "iter": 600, "loss": 0.034691303968429565, "elapsed_sec": 206.45115423202515}
+{"event": "epoch_end", "epoch": 9, "train_loss": 0.11922356795207206, "val_loss": 0.02176445089483067, "best_val": 0.020059683113156455, "best_epoch": 7, "lr": 5.528924666184107e-06, "elapsed_sec": 212.9322793483734, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "iTransformer", "model_id": "trial_00039_1774763011", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 10, "iter": 0, "loss": 0.0711464136838913, "elapsed_sec": 212.9713876247406}
+{"event": "batch_beat", "epoch": 10, "iter": 200, "loss": 0.005171169526875019, "elapsed_sec": 218.5803723335266}
+{"event": "batch_beat", "epoch": 10, "iter": 400, "loss": 0.018366996198892593, "elapsed_sec": 224.4193947315216}
+{"event": "batch_beat", "epoch": 10, "iter": 600, "loss": 0.007372752297669649, "elapsed_sec": 229.9587299823761}
+{"event": "epoch_end", "epoch": 10, "train_loss": 0.11896181113939867, "val_loss": 0.020169783756136893, "best_val": 0.020059683113156455, "best_epoch": 7, "lr": 2.7644623330920534e-06, "elapsed_sec": 236.72426581382751, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "iTransformer", "model_id": "trial_00039_1774763011", "data": "MYDATA"}

@@ -117,6 +117,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
     def train(self, setting,epoch_cb=None):
         metrics_path = getattr(self.args, "metrics_path", None)
         quiet = getattr(self.args, "quiet", False)
+        save_ckpt = not getattr(self.args, "no_save_ckpt", False)
         self._append_jsonl(metrics_path, {
             "event": "run_start",
             "model": str(self.args.model),
@@ -151,6 +152,8 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
         train_steps = len(train_loader)
         early_stopping = EarlyStopping(patience=self.args.patience, verbose=True)
+        if not save_ckpt:
+            early_stopping.save_checkpoint = lambda *args, **kwargs: None  # disable checkpoint saving
 
         model_optim = self._select_optimizer()
         criterion = self._select_criterion()
@@ -278,7 +281,8 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
 
             # Save last.pth
-            self._save_last_ckpt(path, epoch + 1, model_optim, train_loss, vali_loss)
+            if save_ckpt:
+                self._save_last_ckpt(path, epoch + 1, model_optim, train_loss, vali_loss)
 
             # CSV row
             writer.writerow([epoch + 1, train_loss, vali_loss, lr, elapsed])
@@ -309,19 +313,20 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         f_csv.close()
 
         # load best model
-        best_model_path = os.path.join(path, 'checkpoint.pth')
-        if os.path.exists(best_model_path):
-            self._load_ckpt_flexible(best_model_path)
-                    # Copy best checkpoint to a stable filename for sweeps/tuning
-            try:
-                import shutil
-                if os.path.exists(best_model_path):
-                    shutil.copy2(best_model_path, os.path.join(path, "best.pth"))
-            except Exception:
-                pass
+        if save_ckpt:
+            best_model_path = os.path.join(path, 'checkpoint.pth')
+            if os.path.exists(best_model_path):
+                self._load_ckpt_flexible(best_model_path)
+                        # Copy best checkpoint to a stable filename for sweeps/tuning
+                try:
+                    import shutil
+                    if os.path.exists(best_model_path):
+                        shutil.copy2(best_model_path, os.path.join(path, "best.pth"))
+                except Exception:
+                    pass
 
-        else:
-            print(f"[warn] No checkpoint found at {best_model_path}. Returning last epoch weights.")
+            else:
+                print(f"[warn] No checkpoint found at {best_model_path}. Returning last epoch weights.")
         return self.model
 
 

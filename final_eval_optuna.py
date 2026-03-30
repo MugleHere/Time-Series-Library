@@ -15,8 +15,16 @@ OPTUNA_DIR = TSLIB_DIR / "checkpoints" / "optuna"
 FINAL_DIR = TSLIB_DIR / "checkpoints" / "final_best"
 FINAL_DIR.mkdir(parents=True, exist_ok=True)
 
-# ===== USER CONFIG =====
-MODELS = ["DLinear", "TimeXer", "TimeMixer", "AMy_M_Linear_Regression", "TimesNet", "FEDformer", "PatchTST", "iTransformer","Nonstationary_Transformer"]  
+# ===== USER CONFIG ===== First list already run
+#MODELS = [
+#    "DLinear", "TimeXer", "TimeMixer", "AMy_M_Linear_Regression",
+#    "TimesNet", "FEDformer", "PatchTST", "iTransformer", "Nonstationary_Transformer",
+#    "AMy_lstm","Autoformer", "Reformer", "Informer",
+#]
+MODELS = [
+"Transformer",
+"Crossformer",
+]
 N_FEATURES = 90
 
 ROOT_PATH = "/home/ubuntu/Time-Series-Library/data_"
@@ -34,7 +42,7 @@ PRED_LEN = 1
 # Final training budget
 FINAL_EPOCHS = 50
 PATIENCE = 8
-BATCH_BEATS_QUIET = True  # keep output minimal
+QUIET = False  # for final runs, you may want tqdm output
 
 # CPU-only
 FORCE_CPU = True
@@ -45,7 +53,6 @@ SAVE_TEST_OUTPUTS = True
 # If you want inverse scaling for metrics/plots in test:
 INVERSE = False  # set True if you want inverse_transform behavior in test()
 
-# Common defaults; best_params will override lr/bs/dropout/wd + model-specific params
 COMMON = dict(
     task_name=TASK_NAME,
     is_training=1,
@@ -67,33 +74,52 @@ COMMON = dict(
     train_epochs=FINAL_EPOCHS,
     patience=PATIENCE,
 
-    # this script DOES test after training
+    # do test after training
     run_test=1,
 
-    quiet=BATCH_BEATS_QUIET,
+    quiet=QUIET,
     inverse=INVERSE,
 )
+
+# -------------------------
+# Architecture caps (match your sweep)
+# Apply them here too so final training uses same “CPU-feasible” variants.
+# -------------------------
+ARCH_CAPS = {
+    "PatchTST": dict(d_model=64, n_heads=4, e_layers=2, d_ff=256, patch_len=16),
+    "iTransformer": dict(d_model=64, n_heads=4, e_layers=2, d_ff=256, factor=1),
+    "TimeXer": dict(d_model=64, n_heads=4, e_layers=2, d_ff=256, patch_len=16),
+    "TimeMixer": dict(d_model=64, e_layers=2, d_ff=256),
+    "TimesNet": dict(d_model=64, n_heads=4, e_layers=2, d_ff=128, top_k=3, num_kernels=3),
+    "FEDformer": dict(d_model=64, n_heads=4, e_layers=1, d_layers=1, d_ff=128, factor=1, moving_avg=13),
+    # Nonstationary_Transformer: keep as-is unless you added caps in sweep
+}
+
+ARCH_KEYS = [
+    "d_model", "n_heads", "e_layers", "d_layers", "d_ff", "factor",
+    "patch_len", "top_k", "num_kernels", "moving_avg"
+]
 
 
 def load_best_params(model: str) -> dict:
     path = OPTUNA_DIR / model / "best_params.json"
     if not path.exists():
-        raise FileNotFoundError(
-            f"Missing {path}. Run tuning first so best_params.json exists."
-        )
+        raise FileNotFoundError(f"Missing {path}. Run tuning first so best_params.json exists.")
     obj = json.loads(path.read_text(encoding="utf-8"))
-    # file format: {"best_value": ..., "best_params": {...}}
-    return obj["best_params"]
+    # expected format: {"best_value": ..., "best_params": {...}}
+    bp = obj.get("best_params", None)
+    if not isinstance(bp, dict):
+        raise ValueError(f"{path} does not contain best_params dict.")
+    return bp
 
 
-def build_args_list(model: str, model_id: str, exp_dir: Path, params: dict) -> list[str]:
+def build_args_list(model: str, model_id: str, exp_dir: Path, best_params: dict) -> list[str]:
     args_list: list[str] = []
 
     # Common args
     for k, v in COMMON.items():
         flag = f"--{k}"
         if isinstance(v, bool):
-            # include flag if True; skip if False
             if v:
                 args_list.append(flag)
         else:
@@ -113,54 +139,73 @@ def build_args_list(model: str, model_id: str, exp_dir: Path, params: dict) -> l
     args_list += ["--metrics_path", str(exp_dir / "metrics.jsonl")]
     args_list += ["--des", "final_best"]
 
-    # Hyperparams from Optuna best_params
-    # These keys must exist in your parser; they do in run.py.
-    if "learning_rate" in params:
-        args_list += ["--learning_rate", str(params["learning_rate"])]
-    if "batch_size" in params:
-        args_list += ["--batch_size", str(params["batch_size"])]
-    if "dropout" in params:
-        args_list += ["--dropout", str(params["dropout"])]
-    if "weight_decay" in params:
-        args_list += ["--weight_decay", str(params["weight_decay"])]
+    # Apply best hyperparams from Optuna
+    for k in ["learning_rate", "batch_size", "dropout", "weight_decay"]:
+        if k in best_params:
+            args_list += [f"--{k}", str(best_params[k])]
 
-    # Model-specific params
+    # Apply model-specific “structural” params from best_params (if present)
+    # (Most sweeps won’t include them, but harmless if they do.)
+    for k in ARCH_KEYS:
+        if k in best_params:
+            args_list += [f"--{k}", str(best_params[k])]
+
+    # Apply required fixed model-specific args (TimeMixer, LSTM baselines etc.)
     if model == "AMy_lstm":
-        # if these are not in best_params (should be), fallback to safe defaults
-        args_list += ["--d_mark", str(params.get("d_mark", 5))]
-        args_list += ["--lstm_hidden", str(params.get("lstm_hidden", 128))]
-        args_list += ["--lstm_layers", str(params.get("lstm_layers", 1))]
+        args_list += ["--d_mark", str(best_params.get("d_mark", 5))]
+        args_list += ["--lstm_hidden", str(best_params.get("lstm_hidden", 128))]
+        args_list += ["--lstm_layers", str(best_params.get("lstm_layers", 1))]
 
     if model == "TimeMixer":
-        args_list += ["--down_sampling_method", str(params.get("down_sampling_method", "avg"))]
-        args_list += ["--down_sampling_layers", str(params.get("down_sampling_layers", 1))]
-        args_list += ["--down_sampling_window", str(params.get("down_sampling_window", 2))]
-        args_list += ["--channel_independence", str(params.get("channel_independence", 0))]
+        # Ensure these exist (your model expects them)
+        args_list += ["--down_sampling_method", str(best_params.get("down_sampling_method", "avg"))]
+        args_list += ["--down_sampling_layers", str(best_params.get("down_sampling_layers", 1))]
+        args_list += ["--down_sampling_window", str(best_params.get("down_sampling_window", 2))]
+        args_list += ["--channel_independence", str(best_params.get("channel_independence", 0))]
 
+    # IMPORTANT: enforce the same caps as sweep (final training should match sweep variant)
+    caps = ARCH_CAPS.get(model)
+    if caps:
+        for k, v in caps.items():
+            args_list += [f"--{k}", str(v)]
+
+    # NOTE: do NOT pass --no_save_ckpt here; final training should save checkpoints
     return args_list
 
 
 def run_one_model(model: str):
-    params = load_best_params(model)
+    try:
+        best_params = load_best_params(model)
+    except Exception as e:
+        print(f"[skip] {model}: {e}")
+        return
 
     ts = time.strftime("%Y%m%d_%H%M%S")
     run_name = f"{model}_{ts}"
     exp_dir = FINAL_DIR / model / run_name
     exp_dir.mkdir(parents=True, exist_ok=True)
 
-    # Save the config we are about to run (super useful for thesis reproducibility)
-    (exp_dir / "best_params_used.json").write_text(json.dumps(params, indent=2), encoding="utf-8")
+    # Record exactly what we used
+    payload = {
+        "model": model,
+        "timestamp": ts,
+        "best_params_from_optuna": best_params,
+        "arch_caps_applied": ARCH_CAPS.get(model, {}),
+        "common": COMMON,
+    }
+    (exp_dir / "final_config.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
-    args_list = build_args_list(model=model, model_id=run_name, exp_dir=exp_dir, params=params)
+    args_list = build_args_list(model=model, model_id=run_name, exp_dir=exp_dir, best_params=best_params)
     args = run.parse_args(args_list)
 
-    # Run training + test in-process
     exp = Exp_Long_Term_Forecast(args)
-
     setting = f"{args.model}_{args.model_id}"
+
     print(f"\n==== FINAL TRAIN START: {setting} ====")
     print(f"exp_dir: {exp_dir}")
     print(f"epochs: {args.train_epochs} | patience: {args.patience} | bs: {args.batch_size} | lr: {args.learning_rate}")
+    # Show whether checkpoint saving is enabled (should be)
+    print(f"no_save_ckpt: {getattr(args, 'no_save_ckpt', False)}")
 
     exp.train(setting=setting)
 

@@ -1,0 +1,91 @@
+{"event": "run_start", "model": "FEDformer", "model_id": "trial_00042_1774804327", "data": "MYDATA", "seq_len": 48, "label_len": 24, "pred_len": 1, "batch_size": 16, "learning_rate": 0.009483307352588965, "weight_decay": 1.6643715209509438e-05, "dropout": 0.007251878791927745}
+{"event": "batch_beat", "epoch": 1, "iter": 0, "loss": 1.441003441810608, "elapsed_sec": 0.07798933982849121}
+{"event": "batch_beat", "epoch": 1, "iter": 200, "loss": 1.3371727466583252, "elapsed_sec": 18.55775475502014}
+{"event": "batch_beat", "epoch": 1, "iter": 400, "loss": 0.31732460856437683, "elapsed_sec": 36.52057194709778}
+{"event": "batch_beat", "epoch": 1, "iter": 600, "loss": 1.1703331470489502, "elapsed_sec": 55.22797417640686}
+{"event": "batch_beat", "epoch": 1, "iter": 800, "loss": 0.10243086516857147, "elapsed_sec": 73.90333223342896}
+{"event": "batch_beat", "epoch": 1, "iter": 1000, "loss": 0.3679752051830292, "elapsed_sec": 93.07794237136841}
+{"event": "batch_beat", "epoch": 1, "iter": 1200, "loss": 0.15018130838871002, "elapsed_sec": 112.29662275314331}
+{"event": "batch_beat", "epoch": 1, "iter": 1400, "loss": 3.2105393409729004, "elapsed_sec": 131.5024495124817}
+{"event": "epoch_end", "epoch": 1, "train_loss": 4.138604172154953, "val_loss": 0.09562415444174188, "best_val": 0.09562415444174188, "best_epoch": 1, "lr": 0.009483307352588965, "elapsed_sec": 157.5335295200348, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "FEDformer", "model_id": "trial_00042_1774804327", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 2, "iter": 0, "loss": 0.06911832839250565, "elapsed_sec": 157.6392786502838}
+{"event": "batch_beat", "epoch": 2, "iter": 200, "loss": 0.7103843688964844, "elapsed_sec": 176.03984260559082}
+{"event": "batch_beat", "epoch": 2, "iter": 400, "loss": 0.3587140738964081, "elapsed_sec": 194.3431887626648}
+{"event": "batch_beat", "epoch": 2, "iter": 600, "loss": 0.10732631385326385, "elapsed_sec": 213.12978601455688}
+{"event": "batch_beat", "epoch": 2, "iter": 800, "loss": 0.4372575581073761, "elapsed_sec": 231.39919805526733}
+{"event": "batch_beat", "epoch": 2, "iter": 1000, "loss": 0.2706770598888397, "elapsed_sec": 249.52780604362488}
+{"event": "batch_beat", "epoch": 2, "iter": 1200, "loss": 0.1300104409456253, "elapsed_sec": 268.11922216415405}
+{"event": "batch_beat", "epoch": 2, "iter": 1400, "loss": 0.27538371086120605, "elapsed_sec": 286.3717486858368}
+{"event": "epoch_end", "epoch": 2, "train_loss": 0.32864699970450284, "val_loss": 0.0836167551178534, "best_val": 0.0836167551178534, "best_epoch": 2, "lr": 0.009483307352588965, "elapsed_sec": 309.76440477371216, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "FEDformer", "model_id": "trial_00042_1774804327", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 3, "iter": 0, "loss": 0.21650315821170807, "elapsed_sec": 309.8524432182312}
+{"event": "batch_beat", "epoch": 3, "iter": 200, "loss": 0.035869400948286057, "elapsed_sec": 327.7170650959015}
+{"event": "batch_beat", "epoch": 3, "iter": 400, "loss": 0.04057212173938751, "elapsed_sec": 345.5805172920227}
+{"event": "batch_beat", "epoch": 3, "iter": 600, "loss": 0.32400432229042053, "elapsed_sec": 363.3479435443878}
+{"event": "batch_beat", "epoch": 3, "iter": 800, "loss": 0.08309880644083023, "elapsed_sec": 381.22516536712646}
+{"event": "batch_beat", "epoch": 3, "iter": 1000, "loss": 0.2651960253715515, "elapsed_sec": 399.419056892395}
+{"event": "batch_beat", "epoch": 3, "iter": 1200, "loss": 0.04795193299651146, "elapsed_sec": 417.39978790283203}
+{"event": "batch_beat", "epoch": 3, "iter": 1400, "loss": 0.39183005690574646, "elapsed_sec": 435.290887594223}
+{"event": "epoch_end", "epoch": 3, "train_loss": 0.2630930374223102, "val_loss": 0.08609795465040546, "best_val": 0.0836167551178534, "best_epoch": 2, "lr": 0.004741653676294482, "elapsed_sec": 459.13021087646484, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "FEDformer", "model_id": "trial_00042_1774804327", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 4, "iter": 0, "loss": 0.16217277944087982, "elapsed_sec": 459.2372477054596}
+{"event": "batch_beat", "epoch": 4, "iter": 200, "loss": 0.08234738558530807, "elapsed_sec": 477.7404816150665}
+{"event": "batch_beat", "epoch": 4, "iter": 400, "loss": 0.12730734050273895, "elapsed_sec": 496.57511925697327}
+{"event": "batch_beat", "epoch": 4, "iter": 600, "loss": 0.0189511775970459, "elapsed_sec": 515.6414425373077}
+{"event": "batch_beat", "epoch": 4, "iter": 800, "loss": 0.035721275955438614, "elapsed_sec": 534.0361423492432}
+{"event": "batch_beat", "epoch": 4, "iter": 1000, "loss": 0.1260572075843811, "elapsed_sec": 552.1264004707336}
+{"event": "batch_beat", "epoch": 4, "iter": 1200, "loss": 0.04815462976694107, "elapsed_sec": 570.6353619098663}
+{"event": "batch_beat", "epoch": 4, "iter": 1400, "loss": 0.053366295993328094, "elapsed_sec": 589.3832144737244}
+{"event": "epoch_end", "epoch": 4, "train_loss": 0.2278809683361256, "val_loss": 0.08482046064200881, "best_val": 0.0836167551178534, "best_epoch": 2, "lr": 0.002370826838147241, "elapsed_sec": 614.8499157428741, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "FEDformer", "model_id": "trial_00042_1774804327", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 5, "iter": 0, "loss": 0.053919415920972824, "elapsed_sec": 614.9889557361603}
+{"event": "batch_beat", "epoch": 5, "iter": 200, "loss": 0.3495059311389923, "elapsed_sec": 634.1880171298981}
+{"event": "batch_beat", "epoch": 5, "iter": 400, "loss": 0.11312221735715866, "elapsed_sec": 652.9684000015259}
+{"event": "batch_beat", "epoch": 5, "iter": 600, "loss": 0.09378325194120407, "elapsed_sec": 672.1345112323761}
+{"event": "batch_beat", "epoch": 5, "iter": 800, "loss": 0.03175532445311546, "elapsed_sec": 690.5192060470581}
+{"event": "batch_beat", "epoch": 5, "iter": 1000, "loss": 0.04333808273077011, "elapsed_sec": 708.5564200878143}
+{"event": "batch_beat", "epoch": 5, "iter": 1200, "loss": 0.06340677291154861, "elapsed_sec": 727.158486366272}
+{"event": "batch_beat", "epoch": 5, "iter": 1400, "loss": 0.044342003762722015, "elapsed_sec": 745.8909528255463}
+{"event": "epoch_end", "epoch": 5, "train_loss": 0.20152064734100641, "val_loss": 0.06865352907880945, "best_val": 0.06865352907880945, "best_epoch": 5, "lr": 0.0011854134190736206, "elapsed_sec": 770.5163695812225, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "FEDformer", "model_id": "trial_00042_1774804327", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 6, "iter": 0, "loss": 0.06465885043144226, "elapsed_sec": 770.6235270500183}
+{"event": "batch_beat", "epoch": 6, "iter": 200, "loss": 0.13455793261528015, "elapsed_sec": 789.9373774528503}
+{"event": "batch_beat", "epoch": 6, "iter": 400, "loss": 0.13538090884685516, "elapsed_sec": 807.7857837677002}
+{"event": "batch_beat", "epoch": 6, "iter": 600, "loss": 0.15523593127727509, "elapsed_sec": 825.980710029602}
+{"event": "batch_beat", "epoch": 6, "iter": 800, "loss": 0.12050221860408783, "elapsed_sec": 845.1739437580109}
+{"event": "batch_beat", "epoch": 6, "iter": 1000, "loss": 0.03487411513924599, "elapsed_sec": 864.4531013965607}
+{"event": "batch_beat", "epoch": 6, "iter": 1200, "loss": 0.062537781894207, "elapsed_sec": 884.2386100292206}
+{"event": "batch_beat", "epoch": 6, "iter": 1400, "loss": 0.04764232039451599, "elapsed_sec": 903.700737953186}
+{"event": "epoch_end", "epoch": 6, "train_loss": 0.16784342689790724, "val_loss": 0.05770144257775821, "best_val": 0.05770144257775821, "best_epoch": 6, "lr": 0.0005927067095368103, "elapsed_sec": 929.433486700058, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "FEDformer", "model_id": "trial_00042_1774804327", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 7, "iter": 0, "loss": 0.038948122411966324, "elapsed_sec": 929.5436065196991}
+{"event": "batch_beat", "epoch": 7, "iter": 200, "loss": 0.09888860583305359, "elapsed_sec": 947.9258801937103}
+{"event": "batch_beat", "epoch": 7, "iter": 400, "loss": 0.13192377984523773, "elapsed_sec": 966.9014630317688}
+{"event": "batch_beat", "epoch": 7, "iter": 600, "loss": 0.2926553785800934, "elapsed_sec": 985.8314373493195}
+{"event": "batch_beat", "epoch": 7, "iter": 800, "loss": 0.07897084206342697, "elapsed_sec": 1004.489072561264}
+{"event": "batch_beat", "epoch": 7, "iter": 1000, "loss": 0.2050163894891739, "elapsed_sec": 1023.3696129322052}
+{"event": "batch_beat", "epoch": 7, "iter": 1200, "loss": 0.016614435240626335, "elapsed_sec": 1042.532583475113}
+{"event": "batch_beat", "epoch": 7, "iter": 1400, "loss": 0.06132550910115242, "elapsed_sec": 1061.7821168899536}
+{"event": "epoch_end", "epoch": 7, "train_loss": 0.15004149294279295, "val_loss": 0.05766363935260403, "best_val": 0.05766363935260403, "best_epoch": 7, "lr": 0.00029635335476840515, "elapsed_sec": 1087.9491291046143, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "FEDformer", "model_id": "trial_00042_1774804327", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 8, "iter": 0, "loss": 0.10157838463783264, "elapsed_sec": 1088.055555343628}
+{"event": "batch_beat", "epoch": 8, "iter": 200, "loss": 0.06196465343236923, "elapsed_sec": 1106.4218282699585}
+{"event": "batch_beat", "epoch": 8, "iter": 400, "loss": 0.040885187685489655, "elapsed_sec": 1125.2588846683502}
+{"event": "batch_beat", "epoch": 8, "iter": 600, "loss": 0.1951036900281906, "elapsed_sec": 1145.0527830123901}
+{"event": "batch_beat", "epoch": 8, "iter": 800, "loss": 0.04101908951997757, "elapsed_sec": 1163.5244505405426}
+{"event": "batch_beat", "epoch": 8, "iter": 1000, "loss": 0.026319963857531548, "elapsed_sec": 1182.687466621399}
+{"event": "batch_beat", "epoch": 8, "iter": 1200, "loss": 0.26935911178588867, "elapsed_sec": 1201.5359768867493}
+{"event": "batch_beat", "epoch": 8, "iter": 1400, "loss": 0.019246777519583702, "elapsed_sec": 1220.3156278133392}
+{"event": "epoch_end", "epoch": 8, "train_loss": 0.13795701947480757, "val_loss": 0.0566581646997205, "best_val": 0.0566581646997205, "best_epoch": 8, "lr": 0.00014817667738420258, "elapsed_sec": 1244.9096415042877, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "FEDformer", "model_id": "trial_00042_1774804327", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 9, "iter": 0, "loss": 0.13661977648735046, "elapsed_sec": 1245.0100014209747}
+{"event": "batch_beat", "epoch": 9, "iter": 200, "loss": 0.05242665112018585, "elapsed_sec": 1263.0127618312836}
+{"event": "batch_beat", "epoch": 9, "iter": 400, "loss": 0.2566128671169281, "elapsed_sec": 1281.7375111579895}
+{"event": "batch_beat", "epoch": 9, "iter": 600, "loss": 0.03063584491610527, "elapsed_sec": 1300.1959264278412}
+{"event": "batch_beat", "epoch": 9, "iter": 800, "loss": 0.02630394883453846, "elapsed_sec": 1318.899091720581}
+{"event": "batch_beat", "epoch": 9, "iter": 1000, "loss": 0.06707314401865005, "elapsed_sec": 1337.116153717041}
+{"event": "batch_beat", "epoch": 9, "iter": 1200, "loss": 0.16747641563415527, "elapsed_sec": 1355.2203845977783}
+{"event": "batch_beat", "epoch": 9, "iter": 1400, "loss": 0.04940192401409149, "elapsed_sec": 1373.6951594352722}
+{"event": "epoch_end", "epoch": 9, "train_loss": 0.13393032112734424, "val_loss": 0.05505494127562473, "best_val": 0.05505494127562473, "best_epoch": 9, "lr": 7.408833869210129e-05, "elapsed_sec": 1399.2552542686462, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "FEDformer", "model_id": "trial_00042_1774804327", "data": "MYDATA"}
+{"event": "batch_beat", "epoch": 10, "iter": 0, "loss": 0.024169905111193657, "elapsed_sec": 1399.3578481674194}
+{"event": "batch_beat", "epoch": 10, "iter": 200, "loss": 0.01978668011724949, "elapsed_sec": 1417.9904444217682}
+{"event": "batch_beat", "epoch": 10, "iter": 400, "loss": 0.054497916251420975, "elapsed_sec": 1436.196147441864}
+{"event": "batch_beat", "epoch": 10, "iter": 600, "loss": 0.08177599310874939, "elapsed_sec": 1455.1076891422272}
+{"event": "batch_beat", "epoch": 10, "iter": 800, "loss": 0.10150600224733353, "elapsed_sec": 1473.7965953350067}
+{"event": "batch_beat", "epoch": 10, "iter": 1000, "loss": 0.16557084023952484, "elapsed_sec": 1492.708123922348}
+{"event": "batch_beat", "epoch": 10, "iter": 1200, "loss": 0.10785035789012909, "elapsed_sec": 1512.4939892292023}
+{"event": "batch_beat", "epoch": 10, "iter": 1400, "loss": 0.03415630757808685, "elapsed_sec": 1532.2123999595642}
+{"event": "epoch_end", "epoch": 10, "train_loss": 0.13010138935370413, "val_loss": 0.05487011587775951, "best_val": 0.05487011587775951, "best_epoch": 10, "lr": 3.7044169346050644e-05, "elapsed_sec": 1559.0584197044373, "pred_len": 1, "seq_len": 48, "label_len": 24, "model": "FEDformer", "model_id": "trial_00042_1774804327", "data": "MYDATA"}

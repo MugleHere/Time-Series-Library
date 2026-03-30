@@ -183,6 +183,12 @@ def build_parser():
     default=False,
     help='Convenience flag for baselines: implies --no_ckpt_load and can override training-related args if desired.'
     )
+    parser.add_argument(
+    '--no_save_ckpt',
+    action='store_true',
+    default=False,
+    help='Disable writing .pth checkpoints during training (useful for Optuna sweeps).'
+    )
     return parser
 
 def parse_args(cli_args=None):
