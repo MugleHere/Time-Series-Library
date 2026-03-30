@@ -32,3 +32,4 @@
 {"event": "batch_beat", "epoch": 4, "iter": 600, "loss": 0.08642517775297165, "elapsed_sec": 851.4961988925934}
 {"event": "batch_beat", "epoch": 4, "iter": 800, "loss": 0.06776785105466843, "elapsed_sec": 882.1631844043732}
 {"event": "batch_beat", "epoch": 4, "iter": 1000, "loss": 0.062163740396499634, "elapsed_sec": 913.2218239307404}
+{"event": "batch_beat", "epoch": 4, "iter": 1200, "loss": 0.05380675569176674, "elapsed_sec": 944.2786483764648}
