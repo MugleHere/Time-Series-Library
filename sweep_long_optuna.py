@@ -19,7 +19,9 @@ from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
 
 
 TSLIB_DIR = Path(__file__).resolve().parent
-OUT_DIR = TSLIB_DIR / "checkpoints_horizon1" / "optuna"
+OUT_DIR = TSLIB_DIR / "checkpoints_horizon1_2" / "optuna" # FIRST
+
+
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # ---- Fixed experiment settings (yours) ----
@@ -35,16 +37,18 @@ COMMON = dict(
     freq="t",
     seq_len=48,
     label_len=24,
-    pred_len=1,
+    pred_len = 1, # CHANGE THIS FOR THE DIFFERENT RUNS
 
-    enc_in=90,
-    dec_in=90,
-    c_out=90,
+    enc_in=89,
+    dec_in=89,
+    c_out=89,
 
     itr=1,
-    patience=5,
-    train_epochs=10,   # tuning epochs
+
     num_workers=0,
+
+    patience=4,
+    train_epochs=12,
 
     run_test=0,
     quiet=True,
@@ -54,32 +58,32 @@ COMMON = dict(
     no_save_ckpt=True,
 )
 
-MODELS = ["DLinear", "TimeXer", "TimeMixer", "AMy_M_Linear_Regression","TimesNet","PatchTST","Nonstationary_Transformer", "iTransformer", "FEDformer", "Autoformer", "Informer","Transformer","Crossformer","Reformer","AMy_lstm"]  
+MODELS = ["DLinear", "TimeXer", "TimeMixer", "AMy_M_Linear_Regression","TimesNet","PatchTST","AMy_lstm","Nonstationary_Transformer", "iTransformer", "Autoformer"]  
 
 
 def suggest_params(trial: optuna.Trial, model: str) -> dict:
+    # FIRST SWEEP
+    #p = {
+    #    "learning_rate": trial.suggest_float("learning_rate", 1e-5, 5e-2, log=True),
+    #    "batch_size": trial.suggest_categorical("batch_size", [16, 32]),
+    #    "dropout": trial.suggest_float("dropout", 0.0, 0.5),
+    #    "weight_decay": trial.suggest_float("weight_decay", 1e-7, 1e-2, log=True),
+    #}
+    # SECOND SWEEP
     p = {
-        "learning_rate": trial.suggest_float("learning_rate", 1e-5, 5e-2, log=True),
-        "batch_size": trial.suggest_categorical("batch_size", [16, 32]), #Removed 8 as was in the four first models
-        "dropout": trial.suggest_float("dropout", 0.0, 0.5),
-        "weight_decay": trial.suggest_float("weight_decay", 1e-7, 1e-2, log=True),
+    "learning_rate": trial.suggest_float("learning_rate", 2e-4, 3e-3, log=True),
+    "batch_size": 32,  
+    "dropout": trial.suggest_float("dropout", 0.0, 0.2),
+    "weight_decay": 1e-5,
     }
-
     if model == "AMy_lstm":
+        
         p.update({
             "d_mark": 5,
-            "lstm_hidden": trial.suggest_categorical("lstm_hidden", [32, 64, 128, 256]),
+            "lstm_hidden": 64,
             "lstm_layers":  1,
         })
 
-
-    if model == "TimeMixer":
-        p.update({
-            "down_sampling_method": "avg",
-            "down_sampling_layers": 1,
-            "down_sampling_window": 2,
-            "channel_independence": 0,
-        })
     # -------------------------
     # CPU-friendly architecture caps (keep fixed across trials)
     # -------------------------
@@ -89,8 +93,8 @@ def suggest_params(trial: optuna.Trial, model: str) -> dict:
         p.update({
             "d_model": 64,
             "n_heads": 4,     # must divide d_model
-            "e_layers": 2,
-            "d_ff": 256,
+            "e_layers": 1,
+            "d_ff": 128,
             "patch_len": 16,
         })
 
@@ -98,8 +102,8 @@ def suggest_params(trial: optuna.Trial, model: str) -> dict:
         p.update({
             "d_model": 64,
             "n_heads": 4,
-            "e_layers": 2,
-            "d_ff": 256,
+            "e_layers": 1,
+            "d_ff": 128,
             "factor": 1,
         })
 
@@ -107,43 +111,52 @@ def suggest_params(trial: optuna.Trial, model: str) -> dict:
         p.update({
             "d_model": 64,
             "n_heads": 4,
-            "e_layers": 2,
-            "d_ff": 256,
+            "e_layers": 1,
+            "d_ff": 128,
             "patch_len": 16,
         })
 
-    # TimeMixer is already partly constrained; make it smaller too
     if model == "TimeMixer":
         p.update({
             "d_model": 64,
-            "e_layers": 2,
-            "d_ff": 256,
+            "e_layers": 1,
+            "d_ff": 128,
+            "down_sampling_method": "avg",
+            "down_sampling_layers": 1,
+            "down_sampling_window": 2,
+            "channel_independence": 0,
         })
     if model == "TimesNet":
         p.update({
             "d_model": 64,
             "n_heads": 4,
-            "e_layers": 2,
-            "d_ff": 128,      # 256 is ok too, 128 is faster
-            "top_k": 3,       # default is often 5 -> cheaper
-            "num_kernels": 3, # default often 6 -> cheaper
+            "e_layers": 1,
+            "d_ff": 128,      
+            "top_k": 3,       
+            "num_kernels": 3,
             "dropout": p["dropout"],
         })
-    if model == "FEDformer":
+
+    if model == "Nonstationary_Transformer":
         p.update({
-            "d_model": 32,
-            "n_heads": 2,
-            "e_layers": 1,   # huge speed win vs 2+
+            "d_model": 64,
+            "n_heads": 4,
+            "e_layers": 1,
+            "d_ff": 128,
+            "factor": 1,     
+        })
+    if model == "Autoformer":
+        p.update({
+            "d_model": 64,
+            "n_heads": 4,
+            "e_layers": 1,
             "d_layers": 1,
-            "d_ff": 64,     # 256 if you can afford it
-            "factor": 1,
-            "moving_avg": 7,  # smaller decomposition window (faster)
+            "d_ff": 128,
+            "factor": 1,   
         })
 
-
-
-
     return p
+
 import traceback
 def append_jsonl(path: Path, obj: dict):
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -223,7 +236,7 @@ def tune_model(model: str, n_trials: int = 50):
         load_if_exists=True,
         sampler=optuna.samplers.TPESampler(seed=42),
         pruner=optuna.pruners.HyperbandPruner(
-            min_resource=5,
+            min_resource=3,
             max_resource=COMMON["train_epochs"],
             reduction_factor=3,
         ),
@@ -232,6 +245,8 @@ def tune_model(model: str, n_trials: int = 50):
     def objective(trial: optuna.Trial):
         import os, threading, time
         print(f"[objective start] trial={trial.number} pid={os.getpid()} tid={threading.get_ident()} t={time.time()}", flush=True)
+
+        trial_start = time.time()
         params = suggest_params(trial, model)
 
         run_id = f"trial_{trial.number:05d}_{int(time.time())}"
@@ -252,15 +267,18 @@ def tune_model(model: str, n_trials: int = 50):
         try:
             exp.train(setting=f"{model}_{run_id}", epoch_cb=epoch_cb)
             best_val = read_best_val(metrics_path)
-            # Delete all checkpoint files but keep metrics.jsonl
 
+            runtime_sec = time.time() - trial_start
+            trial.set_user_attr("runtime_sec", runtime_sec)
 
             if best_val is None:
                 raise optuna.exceptions.TrialPruned()
             return best_val
 
         except optuna.exceptions.TrialPruned:
-            # Record prune reason (optional: read last metrics line)
+            runtime_sec = time.time() - trial_start
+            trial.set_user_attr("runtime_sec", runtime_sec)
+
             append_jsonl(FAIL_JSONL, {
                 "event": "pruned",
                 "model": model,
@@ -268,10 +286,9 @@ def tune_model(model: str, n_trials: int = 50):
                 "run_id": run_id,
                 "params": params,
                 "metrics_path": str(metrics_path),
+                "runtime_sec": runtime_sec,
                 "time": time.strftime("%Y-%m-%d %H:%M:%S"),
             })
-            # Delete all checkpoint files but keep metrics.jsonl
-
             raise
 
         except KeyboardInterrupt:
@@ -279,8 +296,10 @@ def tune_model(model: str, n_trials: int = 50):
             raise
 
         except Exception as e:
+            runtime_sec = time.time() - trial_start
+            trial.set_user_attr("runtime_sec", runtime_sec)
+
             tb = traceback.format_exc()
-            # Save traceback inside trial folder too
             (exp_dir / "exception.txt").write_text(tb, encoding="utf-8")
 
             append_jsonl(FAIL_JSONL, {
@@ -293,6 +312,7 @@ def tune_model(model: str, n_trials: int = 50):
                 "error": str(e),
                 "traceback_file": str(exp_dir / "exception.txt"),
                 "metrics_path": str(metrics_path),
+                "runtime_sec": runtime_sec,
                 "time": time.strftime("%Y-%m-%d %H:%M:%S"),
             })
 
@@ -317,7 +337,8 @@ def tune_model(model: str, n_trials: int = 50):
 
     if remaining <= 0:
         # Still write best_params.json in case it doesn't exist yet
-        best = {"best_value": study.best_value, "best_params": study.best_params}
+        best_trial = study.best_trial
+        best = {"best_value": study.best_value, "best_params": study.best_params, "runtime_sec": best_trial.user_attrs.get("runtime_sec")}
         (model_dir / "best_params.json").write_text(json.dumps(best, indent=2), encoding="utf-8")
         print(f"[{model}] already complete. saved: {model_dir / 'best_params.json'}")
         return
@@ -344,7 +365,7 @@ def tune_model(model: str, n_trials: int = 50):
 
 def main():
     for m in MODELS:
-        tune_model(m, n_trials=50)
+        tune_model(m, n_trials=25)
 
 
 if __name__ == "__main__":

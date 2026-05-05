@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 
+# Average baseline model
 class Model(nn.Module):
     def __init__(self, configs):
         super().__init__()

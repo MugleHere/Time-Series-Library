@@ -168,3 +168,9 @@ run_anylearn.py
 environment.txt
 
 tslib/
+
+#RESULTS AND TRAINING OUTPUTS
+checkpoints*
+final_best*
+final_baselines_*
+iterative_results_*

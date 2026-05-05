@@ -10,7 +10,7 @@ import pandas as pd
 # =========================
 # CONFIG
 # =========================
-OPTUNA_ROOT = Path("checkpoints/optuna")
+OPTUNA_ROOT = Path("checkpoints_horizon36/optuna")
 OUT_ROOT = OPTUNA_ROOT / "_analysis"
 OUT_ROOT.mkdir(parents=True, exist_ok=True)
 

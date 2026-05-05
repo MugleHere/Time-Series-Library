@@ -13,17 +13,17 @@ import numpy as np
 # -----------------------------
 TSLIB_DIR = Path(__file__).resolve().parent
 
-ROOT_PATH = Path(r"C:\Users\kasgr\Documents\Masteroppgave\master_repository\Master-s-Thesis\data\processed")
-DATA_PATH = "data_karmoy_2024_L42_processed.csv"
+ROOT_PATH = "/home/ubuntu/Time-Series-Library/data_"
+DATA_PATH = "data_karmoy_to_2024_L42_processed.csv"
 
-N_FEATURES = 90
+N_FEATURES = 89
 TASK_NAME = "long_term_forecast"
 FEATURES_MODE = "M"
 TARGET = "OT"
 FREQ = "t"
 SEQ_LEN = 48
 LABEL_LEN = 24
-PRED_LEN = 1
+
 
 USE_GPU = False
 NUM_WORKERS = 0
@@ -37,7 +37,11 @@ WRITE_LOGS = False          # if True -> write .log files for all runs
 WRITE_LOGS_ON_FAIL = True   # if True -> only write logs when rc != 0
 
 # Where to write outputs
-OUT_DIR = TSLIB_DIR / "checkpoints" / "final_baselines"
+PRED_LEN = 36
+OUT_DIR = TSLIB_DIR / f"final_baselines_horizon{PRED_LEN}"
+
+
+
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 RUN_ID = time.strftime("%Y%m%d_%H%M%S")

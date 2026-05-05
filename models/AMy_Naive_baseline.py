@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-
+# Naive baseline model
 class Model(nn.Module):
     def __init__(self, configs):
         super().__init__()

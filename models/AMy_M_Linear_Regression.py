@@ -27,11 +27,9 @@ class Model(nn.Module):
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):
         # x_enc: [B, seq_len, enc_in]
         B, T, C = x_enc.shape
-        # Defensive: ensure expected lengths (useful when debugging data_provider)
-        # (Remove later if you prefer)
-        # assert T == self.seq_len and C == self.enc_in, (T, C, self.seq_len, self.enc_in)
 
-        x = x_enc.reshape(B, T * C)          # [B, seq_len*enc_in]
-        y = self.linear(x)                  # [B, pred_len*c_out]
+
+        x = x_enc.reshape(B, T * C)         
+        y = self.linear(x)                  
         y = y.reshape(B, self.pred_len, self.c_out)
         return y

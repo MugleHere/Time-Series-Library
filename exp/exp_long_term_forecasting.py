@@ -359,6 +359,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
         preds = []
         trues = []
+        inputs = []
 
         save_outputs = getattr(self.args, "save_test_outputs", False)
 
@@ -416,6 +417,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
                 preds.append(outputs_np)
                 trues.append(true_np)
+                inputs.append(batch_x.detach().cpu().numpy())
 
                 # visualization
                 if save_outputs and (i % 20 == 0) and (not quiet):
@@ -431,6 +433,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
         preds = np.concatenate(preds, axis=0) if len(preds) else np.empty((0,))
         trues = np.concatenate(trues, axis=0) if len(trues) else np.empty((0,))
+        inputs = np.concatenate(inputs, axis=0) if len(inputs) else np.empty((0,))
 
         if preds.size == 0:
             print("[test] Empty predictions. Skipping metrics.")
@@ -497,6 +500,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                     np.array([mae, mse, rmse, mape, mspe, smape], dtype=float))
             np.save(os.path.join(results_path, "pred.npy"), preds)
             np.save(os.path.join(results_path, "true.npy"), trues)
+            np.save(os.path.join(results_path, "input.npy"), inputs)
 
 
         # JSONL metrics

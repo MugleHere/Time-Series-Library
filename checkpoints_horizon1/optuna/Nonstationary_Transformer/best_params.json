@@ -1,9 +1,9 @@
 {
-  "best_value": 0.021601654690406893,
+  "best_value": 0.02652041689066097,
   "best_params": {
-    "learning_rate": 9.917829340347842e-05,
-    "batch_size": 32,
-    "dropout": 0.03338192781863424,
-    "weight_decay": 3.0973000737923342e-06
+    "learning_rate": 0.0006744293063150539,
+    "batch_size": 16,
+    "dropout": 0.07467910665323793,
+    "weight_decay": 4.944485361302516e-05
   }
 }
